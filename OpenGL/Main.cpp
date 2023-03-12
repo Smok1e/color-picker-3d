@@ -14,6 +14,7 @@
 constexpr bool FullscreenMode = false;
 constexpr float CameraSpeed = .05f;
 constexpr float CameraRotationSpeed = .1f;
+constexpr float Dampling = .9f;
 
 glm::vec3 WorldAxisY    (0, 1,  0);
 glm::vec3 CameraPosition(0, 0,  3);
@@ -100,19 +101,25 @@ int main()
 	Cube cube;
 	sphere2.setPosition(glm::vec3(1, 1, 1));
 
+	glm::vec3 CameraVelocity(0, 0, 0);
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		glClearColor(.05, .05, .05, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		float speed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? 2: 1;
-		if (glfwGetKey(window, GLFW_KEY_D         ) == GLFW_PRESS) CameraPosition += CameraSpeed * speed * CameraAxisX;
-		if (glfwGetKey(window, GLFW_KEY_A         ) == GLFW_PRESS) CameraPosition -= CameraSpeed * speed * CameraAxisX;
-		if (glfwGetKey(window, GLFW_KEY_SPACE     ) == GLFW_PRESS) CameraPosition += CameraSpeed * speed * CameraAxisY;
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) CameraPosition -= CameraSpeed * speed * CameraAxisY;
-		if (glfwGetKey(window, GLFW_KEY_W         ) == GLFW_PRESS) CameraPosition += CameraSpeed * speed * CameraAxisZ;
-		if (glfwGetKey(window, GLFW_KEY_S         ) == GLFW_PRESS) CameraPosition -= CameraSpeed * speed * CameraAxisZ;
+		float speed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? .2f: .1f;
+		if (glfwGetKey(window, GLFW_KEY_D         ) == GLFW_PRESS) CameraVelocity.x += speed;
+		if (glfwGetKey(window, GLFW_KEY_A         ) == GLFW_PRESS) CameraVelocity.x -= speed;
+		if (glfwGetKey(window, GLFW_KEY_SPACE     ) == GLFW_PRESS) CameraVelocity.y += speed;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) CameraVelocity.y -= speed;
+		if (glfwGetKey(window, GLFW_KEY_W         ) == GLFW_PRESS) CameraVelocity.z += speed;
+		if (glfwGetKey(window, GLFW_KEY_S         ) == GLFW_PRESS) CameraVelocity.z -= speed;
+
+		CameraPosition += CameraSpeed * CameraAxisX * CameraVelocity.x;
+		CameraPosition += CameraSpeed * CameraAxisY * CameraVelocity.y;
+		CameraPosition += CameraSpeed * CameraAxisZ * CameraVelocity.z;
+		CameraVelocity *= Dampling;
 
 		glm::mat4 projection = glm::perspective(fov, aspect_ratio, 0.f, 100.f);
 		glm::mat4 view = glm::lookAt(CameraPosition, CameraPosition+CameraAxisZ, CameraAxisY);
