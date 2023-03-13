@@ -117,7 +117,7 @@ int main()
 		if (glfwGetKey(window, GLFW_KEY_S         ) == GLFW_PRESS) CameraVelocity.z -= speed;
 
 		CameraPosition += CameraSpeed * CameraAxisX * CameraVelocity.x;
-		CameraPosition += CameraSpeed * CameraAxisY * CameraVelocity.y;
+		CameraPosition += CameraSpeed * WorldAxisY  * CameraVelocity.y;
 		CameraPosition += CameraSpeed * CameraAxisZ * CameraVelocity.z;
 		CameraVelocity *= Dampling;
 
@@ -149,30 +149,54 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 	switch (key)
 	{
 		case GLFW_KEY_ESCAPE:
+		{
 			if (action == GLFW_PRESS)
 				glfwSetWindowShouldClose(window, true);
 
 			break;
+		}
 
 		case GLFW_KEY_R:
+		{
 			if (action == GLFW_PRESS)
 			{
-				CameraPosition = glm::vec3(0, 0, 3);
-				CameraRotation = glm::vec2(0, 0);
-				CameraAxisZ = glm::vec3(0, 0, -1);
+				CameraPosition = glm::vec3(0, 0,  3);
+				CameraAxisX    = glm::vec3(1, 0,  0);
+				CameraAxisY    = glm::vec3(0, 1,  0);
+				CameraAxisZ    = glm::vec3(0, 0, -1);
+				CameraRotation = glm::vec2(0, 0    );
 			}
 
 			break;
+		}
 
 		case GLFW_KEY_X:
+		{
 			if (action == GLFW_PRESS)
 			{
 				GLint current_polygon_mode[2] = {};
+
 				glGetIntegerv(GL_POLYGON_MODE, current_polygon_mode);
-				glPolygonMode(GL_FRONT_AND_BACK, *current_polygon_mode == GL_LINE? GL_FILL: GL_LINE);
+				switch (*current_polygon_mode)
+				{
+					case GL_FILL:
+						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						break;
+
+					case GL_LINE:
+						glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+						break;
+
+					case GL_POINT:
+						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+						break;
+				}
+
+				glcheck;
 			}
 
 			break;
+		}
 	}
 }
 
