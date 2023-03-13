@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <cstdio>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 #include "Shader.hpp"
 #include "Sphere.hpp"
@@ -70,6 +73,16 @@ int main()
 	glfwFocusWindow(window);
 	glfwSetWindowPos(window, monitor_size.x/2 - window_size.x/2, monitor_size.y/2 - window_size.y/2);
 
+	// Initializing ImGui
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+	ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+																			
 	// Initializing OpenGL
 	if (glewInit() != GLEW_OK)
 	{
@@ -105,6 +118,11 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
 		glClearColor(.05, .05, .05, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -131,9 +149,17 @@ int main()
 		//sphere2.draw();
 		//cube.draw();
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		glfwSwapBuffers(window);
 	}
 						   
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+	glfwDestroyWindow(window);
 	glfwTerminate();
 }
 
