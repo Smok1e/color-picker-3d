@@ -14,7 +14,7 @@
 
 //-----------------------------------
 
-constexpr bool FullscreenMode = false;
+constexpr bool FullscreenMode = true;
 constexpr float CameraSpeed = .05f;
 constexpr float CameraRotationSpeed = .1f;
 constexpr float Dampling = .9f;
@@ -25,14 +25,23 @@ glm::vec3 CameraAxisX   (1, 0,  0);
 glm::vec3 CameraAxisY   (0, 1,  0);
 glm::vec3 CameraAxisZ   (0, 0, -1);
 glm::vec2 CameraRotation(0, 0);
+
+bool InterfaceVisible = false;
 						    
 //-----------------------------------
+
+void DrawInterface();
 
 void GLFWErrorCallback(int error, const char* description);
 void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void GLFWCursorPosCallback(GLFWwindow* window, double x, double y);
 void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-void CheckOpenGLError(const char* func, int line);
+
+// Measures cursor offset relative to window's center and puts cursor in center of window
+glm::vec2 CenterCursor(GLFWwindow* window);
+
+// Sets interface visibility state according to parameter; It also moves cursor back to center if interface becomes visible
+void SetInterfaceVisible(GLFWwindow* window, bool visible);
 
 //-----------------------------------
 
@@ -69,11 +78,10 @@ int main()
 	glfwSetKeyCallback(window, GLFWKeyCallback);
 	glfwSetCursorPosCallback(window, GLFWCursorPosCallback);
 	glfwSetMouseButtonCallback(window, GLFWMouseButtonCallback);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 	glfwFocusWindow(window);
 	glfwSetWindowPos(window, monitor_size.x/2 - window_size.x/2, monitor_size.y/2 - window_size.y/2);
 
-	// Initializing ImGui
+	// Initializing interface
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -81,9 +89,10 @@ int main()
 
 	ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 330");
-																			
-	// Initializing OpenGL
+	ImGui_ImplOpenGL3_Init("#version 330");															
+	SetInterfaceVisible(window, false);
+
+	// Initializing graphics
 	if (glewInit() != GLEW_OK)
 	{
 		printf("GLEW initalization failed\n");
@@ -115,6 +124,7 @@ int main()
 	sphere2.setPosition(glm::vec3(1, 1, 1));
 
 	glm::vec3 CameraVelocity(0, 0, 0);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
@@ -122,6 +132,7 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+		DrawInterface();
 
 		glClearColor(.05, .05, .05, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -165,6 +176,23 @@ int main()
 
 //-----------------------------------
 
+void DrawInterface()
+{
+	if (InterfaceVisible)
+	{
+		if (ImGui::Begin("Debug"))
+		{
+			ImGui::Button("Pizda!");
+		}
+
+		ImGui::End();
+	}
+
+	else ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+}
+
+//-----------------------------------
+
 void GLFWErrorCallback(int error, const char* description)
 {
 	printf("GLFW Error: %s\n", description);
@@ -177,7 +205,10 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 		case GLFW_KEY_ESCAPE:
 		{
 			if (action == GLFW_PRESS)
-				glfwSetWindowShouldClose(window, true);
+			{
+				if (InterfaceVisible) SetInterfaceVisible(window, false);
+				else glfwSetWindowShouldClose(window, true);
+			}
 
 			break;
 		}
@@ -223,33 +254,57 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 
 			break;
 		}
+
+		case GLFW_KEY_F1:
+		{
+			if (action == GLFW_PRESS)
+				InterfaceVisible += 1;
+
+			break;
+		}
 	}
 }
 
 void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 {
-	int window_size_x = 0, window_size_y = 0;
-	glfwGetWindowSize(window, &window_size_x, &window_size_y);
-	glm::vec2 window_center(window_size_x/2, window_size_y/2);
-	glm::vec2 delta = glm::vec2(x, y) - window_center;
-	glfwSetCursorPos(window, window_center.x, window_center.y);
-	
-	CameraRotation += delta*glm::vec2(1, -1)*CameraRotationSpeed;
+	if (!InterfaceVisible)
+	{
+		CameraRotation += CenterCursor(window)*glm::vec2(1, -1)*CameraRotationSpeed;
 
-	glm::vec3 camera_axis_z = glm::normalize(glm::vec3(
-		cos(glm::radians(CameraRotation.y)) * cos(glm::radians(CameraRotation.x)),
-		sin(glm::radians(CameraRotation.y)),
-		cos(glm::radians(CameraRotation.y)) * sin(glm::radians(CameraRotation.x))
-	));
+		glm::vec3 camera_axis_z = glm::normalize(glm::vec3(
+			cos(glm::radians(CameraRotation.y)) * cos(glm::radians(CameraRotation.x)),
+			sin(glm::radians(CameraRotation.y)),
+			cos(glm::radians(CameraRotation.y)) * sin(glm::radians(CameraRotation.x))
+		));
 
-	CameraAxisZ = camera_axis_z;
-	CameraAxisX = glm::normalize(glm::cross(CameraAxisZ, WorldAxisY ));
-	CameraAxisY = glm::normalize(glm::cross(CameraAxisX, CameraAxisZ));
+		CameraAxisZ = camera_axis_z;
+		CameraAxisX = glm::normalize(glm::cross(CameraAxisZ, WorldAxisY ));
+		CameraAxisY = glm::normalize(glm::cross(CameraAxisX, CameraAxisZ));
+	}
 }
 
 void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	// ...
+}
+
+//-----------------------------------
+
+glm::vec2 CenterCursor(GLFWwindow* window)
+{
+	double cursor_pos_x = 0, cursor_pos_y = 0;
+	glfwGetCursorPos(window, &cursor_pos_x, &cursor_pos_y);
+	int window_size_x = 0,window_size_y = 0;
+	glfwGetWindowSize(window, &window_size_x, &window_size_y);
+	glm::vec2 window_center(window_size_x/2, window_size_y/2);
+	glfwSetCursorPos(window, window_center.x, window_center.y);
+	return glm::vec2(cursor_pos_x, cursor_pos_y) - window_center;
+}
+
+void SetInterfaceVisible(GLFWwindow* window, bool visible)
+{
+	if (!(InterfaceVisible = visible))
+		CenterCursor(window);
 }
 
 //-----------------------------------
