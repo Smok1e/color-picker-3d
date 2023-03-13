@@ -11,6 +11,7 @@
 
 void CheckOpenGLError(const char* func, int line);
 void GetOpenGLErrorMessage(GLenum code, const char** name, const char** description);
+void glSetEnabled(GLenum index, bool state);
 
 template <typename T>
 T Inspect(const char* expression, const T& value);

@@ -105,3 +105,11 @@ void GetOpenGLErrorMessage(GLenum code, const char** pname, const char** pdescri
 }
 
 //-----------------------------------
+
+void glSetEnabled(GLenum index, bool state)
+{
+	if (state) glEnable (index);
+	else       glDisable(index);
+}
+
+//-----------------------------------

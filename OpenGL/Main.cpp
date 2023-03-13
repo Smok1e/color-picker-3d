@@ -14,7 +14,7 @@
 
 //-----------------------------------
 
-constexpr bool FullscreenMode = true;
+constexpr bool FullscreenMode = false;
 constexpr float CameraSpeed = .05f;
 constexpr float CameraRotationSpeed = .1f;
 constexpr float Dampling = .9f;
@@ -56,10 +56,10 @@ int main()
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* videomode = glfwGetVideoMode(monitor);
 
-	glm::ivec2 monitor_size(videomode->width, videomode->height);
-	glm::ivec2 window_size = static_cast<glm::vec2>(monitor_size)*(FullscreenMode? 1.f: .7f);
+	glm::vec2 monitor_size(videomode->width, videomode->height);
+	glm::vec2 window_size = static_cast<glm::vec2>(monitor_size)*(FullscreenMode? 1.f: .9f);
 
-	float aspect_ratio = static_cast<float>(window_size.x)/static_cast<float>(window_size.y);
+	float aspect_ratio = window_size.x/window_size.y;
 	constexpr float fov = glm::radians(45.f);
 
 	// Initializing window
@@ -109,7 +109,7 @@ int main()
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthFunc(GL_ALWAYS); 
+	glDepthFunc(GL_LESS); 
 
 	Shader shader;
 	if (!shader.loadFromFile("shader.vert", "shader.frag"))
@@ -150,15 +150,12 @@ int main()
 		CameraPosition += CameraSpeed * CameraAxisZ * CameraVelocity.z;
 		CameraVelocity *= Dampling;
 
-		glm::mat4 projection = glm::perspective(fov, aspect_ratio, 0.f, 100.f);
-		glm::mat4 view = glm::lookAt(CameraPosition, CameraPosition+CameraAxisZ, CameraAxisY);
-		glm::mat4 transform = projection*view;
-
 		shader.use();
-		shader.setUniform("transform", transform);
+		shader.setUniform("projection", glm::perspective(fov, aspect_ratio, .1f, 100.f));
+		shader.setUniform("view",       glm::lookAt(CameraPosition, CameraPosition+CameraAxisZ, CameraAxisY));
 		sphere1.draw();
-		//sphere2.draw();
-		//cube.draw();
+		sphere2.draw();
+		cube.draw();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -180,12 +177,22 @@ void DrawInterface()
 {
 	if (InterfaceVisible)
 	{
-		if (ImGui::Begin("Debug"))
-		{
-			ImGui::Button("Pizda!");
-		}
+		GLint polygon_render_mode[2] = {};
+		glGetIntegerv(GL_POLYGON_MODE, polygon_render_mode);
+		bool depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
+
+		ImGui::Begin("Debug");
+
+		ImGui::Text("Polygon render mode");
+		ImGui::RadioButton("Fill",      polygon_render_mode, GL_FILL );
+		ImGui::RadioButton("Wireframe", polygon_render_mode, GL_LINE );
+		ImGui::RadioButton("Points",    polygon_render_mode, GL_POINT);
+		ImGui::Checkbox("Enable depth test", &depth_test_enabled);
 
 		ImGui::End();
+
+		glSetEnabled(GL_DEPTH_TEST, depth_test_enabled);
+		glPolygonMode(GL_FRONT_AND_BACK, *polygon_render_mode);
 	}
 
 	else ImGui::SetMouseCursor(ImGuiMouseCursor_None);
@@ -272,9 +279,9 @@ void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 		CameraRotation += CenterCursor(window)*glm::vec2(1, -1)*CameraRotationSpeed;
 
 		glm::vec3 camera_axis_z = glm::normalize(glm::vec3(
-			cos(glm::radians(CameraRotation.y)) * cos(glm::radians(CameraRotation.x)),
+			cos(glm::radians(CameraRotation.y)) * cos(glm::radians(CameraRotation.x-90)),
 			sin(glm::radians(CameraRotation.y)),
-			cos(glm::radians(CameraRotation.y)) * sin(glm::radians(CameraRotation.x))
+			cos(glm::radians(CameraRotation.y)) * sin(glm::radians(CameraRotation.x-90))
 		));
 
 		CameraAxisZ = camera_axis_z;
