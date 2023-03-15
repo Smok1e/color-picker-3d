@@ -1,19 +1,16 @@
 #include "Color.hpp"
+#include <cstring>
 
 //-----------------------------------
 
-Color::Color():
-	r(0),
-	g(0),
-	b(0),
-	a(255)
-{}
+#pragma warning(push)
+#pragma warning(disable: 26495)
 
-Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a /*= 255*/):
-	r(r),
-	g(g),
-	b(b),
-	a(a)
+Color::Color():
+	r(0.f),
+	g(0.f),
+	b(0.f),
+	a(1.f)
 {}
 
 Color::Color(const Color& copy):
@@ -23,39 +20,79 @@ Color::Color(const Color& copy):
 	a(copy.a)
 {}
 
-//-----------------------------------
+Color::Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a /*= 1.f*/):
+	r(r),
+	g(g),
+	b(b),
+	a(a)
+{}
 
-glm::vec3 Color::asVec3()
-{
-	return glm::vec3(
-		static_cast<float>(r) / 255,
-		static_cast<float>(g) / 255,
-		static_cast<float>(b) / 255
-	);
-}
+Color::Color(const Color::glm_vec4_t& glm_vector):
+	glm_vector(glm_vector)
+{}
 
-glm::vec4 Color::asVec4()
-{
-	return glm::vec4(
-		static_cast<float>(r) / 255,
-		static_cast<float>(g) / 255,
-		static_cast<float>(b) / 255,
-		static_cast<float>(a) / 255
-	);
-}
+Color::Color(const Color::glm_vec3_t& glm_vector):
+	r(glm_vector.r),
+	g(glm_vector.g),
+	b(glm_vector.b),
+	a(1.f)
+{}
 
-Color::operator glm::vec3()
-{
-	return asVec3();
-}
-
-Color::operator glm::vec4()
-{
-	return asVec4();
-}
+#pragma warning(pop)
 
 //-----------------------------------
 
+Color Color::FromBytesRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a /*= 255*/)
+{
+	return Color(
+		static_cast<GLfloat>(r)/255.f,
+		static_cast<GLfloat>(g)/255.f,
+		static_cast<GLfloat>(b)/255.f,
+		static_cast<GLfloat>(a)/255.f
+	);
+}
+
+Color Color::FromStringHexRGB(const char* hexstring)
+{
+	hexstring += (*hexstring == '#');
+	size_t len = strlen(hexstring);
+	if (len != 6 && len != 8)
+		return Color::Black;
+
+	uint8_t bytes[4] = {0};
+	*reinterpret_cast<uint32_t*>(bytes) = strtoull(hexstring, nullptr, 16);
+
+	if (len == 6) return Color::FromBytesRGB(bytes[2], bytes[1], bytes[0]          );
+	else          return Color::FromBytesRGB(bytes[3], bytes[2], bytes[1], bytes[0]);
+}
+
+//-----------------------------------
+
+char* Color::toStringHexRGB(char* buffer, size_t limit /*= 0*/) const
+{
+	uint8_t bytes[4] = {
+		255*r,
+		255*g,
+		255*b,
+		255*a,
+	};
+
+	snprintf(buffer, limit, "%02X%02X%02X%02X", bytes[0], bytes[1], bytes[2], bytes[3]);
+	return buffer;
+}	
+
+//----------------------------------- Constants
+
+const Color Color::Transparent(0.f, 0.f, 0.f, 0.f);
+const Color Color::Black      (0.f, 0.f, 0.f     );
+const Color Color::White      (1.f, 1.f, 1.f     );
+const Color Color::Red        (1.f, 0.f, 0.f     );
+const Color Color::Green      (0.f, 1.f, 0.f     );
+const Color Color::Blue       (0.f, 0.f, 1.f     );
+
+//-----------------------------------
+
+#if 0
 Color Color::HSV(uint8_t h, uint8_t s, uint8_t v, uint8_t a /*= 255*/)
 {
 	Color color;
@@ -118,5 +155,6 @@ Color Color::HSV(uint8_t h, uint8_t s, uint8_t v, uint8_t a /*= 255*/)
 	color.a = a;
 	return color;
 }
+#endif
 
 //-----------------------------------

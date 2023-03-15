@@ -8,6 +8,7 @@
 #include <vector>
 #include <gl/glew.h>
 #include <glm/glm.hpp>
+#include "Color.hpp"
 
 //---------------------------------
 
@@ -56,7 +57,9 @@ public:
 	void setUniform(const char* name, const glm::mat4& matrix);
 	void setUniform(const char* name, const glm::vec3& vector);
 	void setUniform(const char* name, const glm::vec4& vector);
-	void setUniform(const char* name, int value);
+	void setUniform(const char* name, const Color& color);
+	void setUniform(const char* name, int   value);
+	void setUniform(const char* name, float value);
 
 protected:
 	GLuint m_program_handle;

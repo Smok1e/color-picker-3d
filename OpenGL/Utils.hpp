@@ -6,7 +6,10 @@
 
 //-----------------------------------
 
-#define glcheck CheckOpenGLError(__FUNCSIG__, __LINE__);
+#if defined(_DEBUG) || defined(FORCE_GL_CHECK)
+	#define glcheck CheckOpenGLError(__FUNCSIG__, __LINE__);
+#endif
+
 #define inspect(expression) Inspect(#expression, expression)
 
 void CheckOpenGLError(const char* func, int line);

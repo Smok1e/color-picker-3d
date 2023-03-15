@@ -212,11 +212,25 @@ void Shader::setUniform(const char* name, const glm::vec4& vector)
 		glProgramUniform4f(m_program_handle, location, vector.x, vector.y, vector.z, vector.w); glcheck;
 }
 
+void Shader::setUniform(const char* name, const Color& color)
+{
+	GLint location = getUniformLocation(name);
+	if (location != -1)
+		glProgramUniform4f(m_program_handle, location, color.r, color.g, color.b, color.a); glcheck;
+}
+
 void Shader::setUniform(const char* name, int value)
 {
 	GLint location = getUniformLocation(name);
 	if (location != -1)
 		glProgramUniform1i(m_program_handle, location, value); glcheck;
+}
+
+void Shader::setUniform(const char* name, float value)
+{
+	GLint location = getUniformLocation(name);
+	if (location != -1)
+		glProgramUniform1f(m_program_handle, location, value); glcheck;
 }
 
 //---------------------------------

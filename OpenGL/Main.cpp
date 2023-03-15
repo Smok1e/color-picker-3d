@@ -19,6 +19,12 @@ constexpr float CameraSpeed = .05f;
 constexpr float CameraRotationSpeed = .1f;
 constexpr float Dampling = .9f;
 
+int   SpherePointsCount = 16;
+float SphereRadius      = .5f;
+
+float AmbientLightningStrength = 0.2;
+Color LightColor = Color::FromStringHexRGB("#FBFED2");
+
 glm::vec3 WorldAxisY    (0, 1,  0);
 glm::vec3 CameraPosition(0, 0,  3);
 glm::vec3 CameraAxisX   (1, 0,  0);
@@ -146,16 +152,22 @@ int main()
 		if (glfwGetKey(window, GLFW_KEY_S         ) == GLFW_PRESS) CameraVelocity.z -= speed;
 
 		CameraPosition += CameraSpeed * CameraAxisX * CameraVelocity.x;
-		CameraPosition += CameraSpeed * WorldAxisY  * CameraVelocity.y;
+		CameraPosition += CameraSpeed * CameraAxisY * CameraVelocity.y;
 		CameraPosition += CameraSpeed * CameraAxisZ * CameraVelocity.z;
 		CameraVelocity *= Dampling;
 
+		sphere1.setPointCount(SpherePointsCount, SpherePointsCount);
+		sphere1.setRadius(SphereRadius);
+
 		shader.use();
 		shader.setUniform("projection", glm::perspective(fov, aspect_ratio, .1f, 100.f));
-		shader.setUniform("view",       glm::lookAt(CameraPosition, CameraPosition+CameraAxisZ, CameraAxisY));
+		shader.setUniform("view", glm::lookAt(CameraPosition, CameraPosition+CameraAxisZ, CameraAxisY));
+		shader.setUniform("ambientLightningStrength", AmbientLightningStrength);
+		shader.setUniform("lightPos", glm::vec3(2, 2, 2));
+		shader.setUniform("lightColor", LightColor);
 		sphere1.draw();
-		sphere2.draw();
-		cube.draw();
+		//sphere2.draw();
+		//cube.draw();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -184,10 +196,20 @@ void DrawInterface()
 		ImGui::Begin("Debug");
 
 		ImGui::Text("Polygon render mode");
-		ImGui::RadioButton("Fill",      polygon_render_mode, GL_FILL );
-		ImGui::RadioButton("Wireframe", polygon_render_mode, GL_LINE );
-		ImGui::RadioButton("Points",    polygon_render_mode, GL_POINT);
+		ImGui::RadioButton("Fill", polygon_render_mode, GL_FILL);
+		ImGui::RadioButton("Wireframe", polygon_render_mode, GL_LINE);
+		ImGui::RadioButton("Points", polygon_render_mode, GL_POINT);
 		ImGui::Checkbox("Enable depth test", &depth_test_enabled);
+
+		ImGui::Separator();
+
+		ImGui::SliderFloat("Ambient lightning strength", &AmbientLightningStrength, 0, 1, "%.2f");
+		ImGui::ColorEdit3("Light color", LightColor.data);
+
+		ImGui::Separator();
+
+		ImGui::SliderInt("Sphere points count", &SpherePointsCount, 4, 256);
+		ImGui::SliderFloat("Sphere radius", &SphereRadius, .1f, 50.f, "%.1f");
 
 		ImGui::End();
 
