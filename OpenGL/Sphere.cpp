@@ -53,7 +53,7 @@ Sphere::Sphere():
 	glBindVertexArray(0);
 	*/
 
-	update();
+	updateVertexData();
 }
 
 Sphere::~Sphere()
@@ -63,7 +63,7 @@ Sphere::~Sphere()
 
 //---------------------------------
 
-void Sphere::update()
+void Sphere::updateVertexData()
 {
 	destroy();
 
@@ -85,7 +85,7 @@ void Sphere::update()
            double x = cos(beta);
            double y = sin(beta);
 
-		   Color color = Color::White; //Color::HSV(255*(static_cast<double>(lng)/m_longitude_points), 255, 255);
+		   Color color = Color(0.f, .7f, 1.f, .8f); //Color::HSV(255*(static_cast<double>(lng)/m_longitude_points), 255, 255);
 
 		   glm::vec3 position0 = glm::vec3(x*zr0, y*zr0, z0)*m_radius;
 		   vertices.push_back(Vertex(
@@ -186,7 +186,7 @@ void Sphere::setPointCount(size_t latitude, size_t longitude)
 	{
 		m_latitude_points = latitude;
 		m_longitude_points = longitude;
-		update();
+		updateVertexData();
 	}
 }
 
@@ -203,7 +203,7 @@ size_t Sphere::getLongitudePointCount() const
 void Sphere::setRadius(float radius)
 {
 	if (radius != m_radius)
-		m_radius = radius, update();
+		m_radius = radius, updateVertexData();
 }
 
 float Sphere::getRadius() const

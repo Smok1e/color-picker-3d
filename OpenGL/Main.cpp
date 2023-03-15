@@ -1,4 +1,7 @@
-﻿#include <GL/glew.h>
+﻿#define _USE_MATH_DEFINES
+#include <cmath>
+
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,28 +14,24 @@
 #include "Sphere.hpp"
 #include "Cube.hpp"
 #include "Utils.hpp"
+#include "Camera.hpp"
 
 //-----------------------------------
 
-constexpr bool FullscreenMode = false;
-constexpr float CameraSpeed = .05f;
-constexpr float CameraRotationSpeed = .1f;
-constexpr float Dampling = .9f;
+constexpr bool  FullscreenMode = false;
 
-int   SpherePointsCount = 16;
-float SphereRadius      = .5f;
+int   SphereHorizontalPointCount = 16;
+int   SphereVerticalPointCount   = 16;
+float SphereRadius               = .5f;
 
 float AmbientLightningStrength  = .2f;
 float DiffuseLightningStrength  = 1.f;
 float SpecularLightningStrength = .5f;
 Color LightColor = Color::FromStringHexRGB("#FBFED2");
 
-glm::vec3 WorldAxisY    (0, 1,  0);
-glm::vec3 CameraPosition(0, 0,  3);
-glm::vec3 CameraAxisX   (1, 0,  0);
-glm::vec3 CameraAxisY   (0, 1,  0);
-glm::vec3 CameraAxisZ   (0, 0, -1);
-glm::vec2 CameraRotation(0, 0);
+float FieldOfView = 45;
+Camera TheCamera;
+glm::mat4 ProjectionMatrix;
 
 bool InterfaceVisible = false;
 						    
@@ -131,10 +130,15 @@ int main()
 	Cube cube;
 	sphere2.setPosition(glm::vec3(1, 1, 1));
 
-	glm::vec3 CameraVelocity(0, 0, 0);
-
+	float last_fov = -1;
 	while (!glfwWindowShouldClose(window))
 	{
+		if (FieldOfView != last_fov)
+		{
+			last_fov = FieldOfView;
+			ProjectionMatrix = glm::perspective(glm::radians(FieldOfView), aspect_ratio, .1f, 100.f);
+		}
+
 		glfwPollEvents();
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -145,33 +149,40 @@ int main()
 		glClearColor(.05, .05, .05, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		float speed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? .2f: .1f;
-		if (glfwGetKey(window, GLFW_KEY_D         ) == GLFW_PRESS) CameraVelocity.x += speed;
-		if (glfwGetKey(window, GLFW_KEY_A         ) == GLFW_PRESS) CameraVelocity.x -= speed;
-		if (glfwGetKey(window, GLFW_KEY_SPACE     ) == GLFW_PRESS) CameraVelocity.y += speed;
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) CameraVelocity.y -= speed;
-		if (glfwGetKey(window, GLFW_KEY_W         ) == GLFW_PRESS) CameraVelocity.z += speed;
-		if (glfwGetKey(window, GLFW_KEY_S         ) == GLFW_PRESS) CameraVelocity.z -= speed;
+		glm::vec3 movement(
+			// X
+			 (glfwGetKey(window, GLFW_KEY_D         ) == GLFW_PRESS) 
+			-(glfwGetKey(window, GLFW_KEY_A         ) == GLFW_PRESS), 
 
-		CameraPosition += CameraSpeed * CameraAxisX * CameraVelocity.x;
-		CameraPosition += CameraSpeed * CameraAxisY * CameraVelocity.y;
-		CameraPosition += CameraSpeed * CameraAxisZ * CameraVelocity.z;
-		CameraVelocity *= Dampling;
+			// Y
+			 (glfwGetKey(window, GLFW_KEY_SPACE     ) == GLFW_PRESS)
+			-(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS), 
 
-		sphere1.setPointCount(SpherePointsCount, SpherePointsCount);
+			// Z
+			 (glfwGetKey(window, GLFW_KEY_W         ) == GLFW_PRESS) 
+			-(glfwGetKey(window, GLFW_KEY_S         ) == GLFW_PRESS)
+		);
+
+		float speed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? .01f: .005f;
+		TheCamera.addVelocity(movement*speed);
+		TheCamera.update();
+
+		sphere1.setPointCount(SphereHorizontalPointCount, SphereVerticalPointCount);
 		sphere1.setRadius(SphereRadius);
 
-		shader.use();
-		shader.setUniform("projection", glm::perspective(fov, aspect_ratio, .1f, 100.f));
-		shader.setUniform("view", glm::lookAt(CameraPosition, CameraPosition+CameraAxisZ, CameraAxisY));
-		shader.setUniform("ambientLightningStrength", AmbientLightningStrength);
-		shader.setUniform("diffuseLightningStrength", DiffuseLightningStrength);
+		shader.setUniform("projection",                ProjectionMatrix         );
+		shader.setUniform("view",                      TheCamera.getView()      );
+		shader.setUniform("viewPos",                   TheCamera.getPosition()  );
+		shader.setUniform("ambientLightningStrength",  AmbientLightningStrength );
+		shader.setUniform("diffuseLightningStrength",  DiffuseLightningStrength );
 		shader.setUniform("specularLightningStrength", SpecularLightningStrength);
-		shader.setUniform("lightPos", glm::vec3(2, 2, 2));
-		shader.setUniform("lightColor", LightColor);
-		shader.setUniform("viewPos", CameraPosition);
+		shader.setUniform("lightPos",                  glm::vec3(2, 2, 2)       );
+		shader.setUniform("lightColor",                LightColor               );
+
+		shader.use();
 		sphere1.draw();
-		//sphere2.draw();
+
+		sphere2.draw();
 		//cube.draw();
 
         ImGui::Render();
@@ -200,23 +211,32 @@ void DrawInterface()
 
 		ImGui::Begin("Debug");
 
-		ImGui::Text("Polygon render mode");
-		ImGui::RadioButton("Fill", polygon_render_mode, GL_FILL);
-		ImGui::RadioButton("Wireframe", polygon_render_mode, GL_LINE);
-		ImGui::RadioButton("Points", polygon_render_mode, GL_POINT);
-		ImGui::Checkbox("Enable depth test", &depth_test_enabled);
+		if (ImGui::CollapsingHeader("Rendering"))
+		{
+			ImGui::Text("Polygon render mode:");
+			ImGui::RadioButton("Fill", polygon_render_mode, GL_FILL);
+			ImGui::RadioButton("Wireframe", polygon_render_mode, GL_LINE);
+			ImGui::RadioButton("Points", polygon_render_mode, GL_POINT);
+			ImGui::Separator();
+			ImGui::Checkbox("Enable depth test", &depth_test_enabled);
 
-		ImGui::Separator();
+			ImGui::SliderFloat("FOV", &FieldOfView, 1, 180);
+		}
 
-		ImGui::SliderFloat("Ambient lightning strength",  &AmbientLightningStrength,  0, 1, "%.2f");
-		ImGui::SliderFloat("Diffuse lightning strength",  &DiffuseLightningStrength,  0, 1, "%.2f");
-		ImGui::SliderFloat("Specular lightning strength", &SpecularLightningStrength, 0, 1, "%.2f");
-		ImGui::ColorEdit3("Light color", LightColor.data);
+		if (ImGui::CollapsingHeader("Lightning"))
+		{
+			ImGui::SliderFloat("Ambient lightning strength",  &AmbientLightningStrength,  0, 1, "%.2f");
+			ImGui::SliderFloat("Diffuse lightning strength",  &DiffuseLightningStrength,  0, 1, "%.2f");
+			ImGui::SliderFloat("Specular lightning strength", &SpecularLightningStrength, 0, 1, "%.2f");
+			ImGui::ColorEdit3("Light color", LightColor.data);
+		}
 
-		ImGui::Separator();
-
-		ImGui::SliderInt("Sphere points count", &SpherePointsCount, 4, 256);
-		ImGui::SliderFloat("Sphere radius", &SphereRadius, .1f, 5.f, "%.2f");
+		if (ImGui::CollapsingHeader("Sphere"))
+		{
+			ImGui::SliderInt  ("Horizontal points", &SphereHorizontalPointCount, 4, 256);
+			ImGui::SliderInt  ("Vertical points",   &SphereVerticalPointCount,   4, 256);
+			ImGui::SliderFloat("Radius",            &SphereRadius, .1f, 5.f, "%.2f");
+		}
 
 		ImGui::End();
 
@@ -252,13 +272,7 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 		case GLFW_KEY_R:
 		{
 			if (action == GLFW_PRESS)
-			{
-				CameraPosition = glm::vec3(0, 0,  3);
-				CameraAxisX    = glm::vec3(1, 0,  0);
-				CameraAxisY    = glm::vec3(0, 1,  0);
-				CameraAxisZ    = glm::vec3(0, 0, -1);
-				CameraRotation = glm::vec2(0, 0    );
-			}
+				TheCamera.reset();
 
 			break;
 		}
@@ -304,19 +318,7 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 {
 	if (!InterfaceVisible)
-	{
-		CameraRotation += CenterCursor(window)*glm::vec2(1, -1)*CameraRotationSpeed;
-
-		glm::vec3 camera_axis_z = glm::normalize(glm::vec3(
-			cos(glm::radians(CameraRotation.y)) * cos(glm::radians(CameraRotation.x-90)),
-			sin(glm::radians(CameraRotation.y)),
-			cos(glm::radians(CameraRotation.y)) * sin(glm::radians(CameraRotation.x-90))
-		));
-
-		CameraAxisZ = camera_axis_z;
-		CameraAxisX = glm::normalize(glm::cross(CameraAxisZ, WorldAxisY ));
-		CameraAxisY = glm::normalize(glm::cross(CameraAxisX, CameraAxisZ));
-	}
+		TheCamera.addRotation(CenterCursor(window)*glm::vec2(1, -1)*.1f);
 }
 
 void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)

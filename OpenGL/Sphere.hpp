@@ -12,7 +12,6 @@ public:
 	Sphere();
 	~Sphere();
 
-	void update();
 	void destroy();
 
 	void draw();
@@ -28,6 +27,8 @@ public:
 	float getRadius() const;
 
 protected:
+	void updateVertexData();
+
 	GLuint m_vertex_buffer;
 	GLuint m_vertex_array;
 	GLuint m_index_buffer;
