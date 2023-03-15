@@ -22,7 +22,9 @@ constexpr float Dampling = .9f;
 int   SpherePointsCount = 16;
 float SphereRadius      = .5f;
 
-float AmbientLightningStrength = 0.2;
+float AmbientLightningStrength  = .2f;
+float DiffuseLightningStrength  = 1.f;
+float SpecularLightningStrength = .5f;
 Color LightColor = Color::FromStringHexRGB("#FBFED2");
 
 glm::vec3 WorldAxisY    (0, 1,  0);
@@ -163,8 +165,11 @@ int main()
 		shader.setUniform("projection", glm::perspective(fov, aspect_ratio, .1f, 100.f));
 		shader.setUniform("view", glm::lookAt(CameraPosition, CameraPosition+CameraAxisZ, CameraAxisY));
 		shader.setUniform("ambientLightningStrength", AmbientLightningStrength);
+		shader.setUniform("diffuseLightningStrength", DiffuseLightningStrength);
+		shader.setUniform("specularLightningStrength", SpecularLightningStrength);
 		shader.setUniform("lightPos", glm::vec3(2, 2, 2));
 		shader.setUniform("lightColor", LightColor);
+		shader.setUniform("viewPos", CameraPosition);
 		sphere1.draw();
 		//sphere2.draw();
 		//cube.draw();
@@ -203,13 +208,15 @@ void DrawInterface()
 
 		ImGui::Separator();
 
-		ImGui::SliderFloat("Ambient lightning strength", &AmbientLightningStrength, 0, 1, "%.2f");
+		ImGui::SliderFloat("Ambient lightning strength",  &AmbientLightningStrength,  0, 1, "%.2f");
+		ImGui::SliderFloat("Diffuse lightning strength",  &DiffuseLightningStrength,  0, 1, "%.2f");
+		ImGui::SliderFloat("Specular lightning strength", &SpecularLightningStrength, 0, 1, "%.2f");
 		ImGui::ColorEdit3("Light color", LightColor.data);
 
 		ImGui::Separator();
 
 		ImGui::SliderInt("Sphere points count", &SpherePointsCount, 4, 256);
-		ImGui::SliderFloat("Sphere radius", &SphereRadius, .1f, 50.f, "%.1f");
+		ImGui::SliderFloat("Sphere radius", &SphereRadius, .1f, 5.f, "%.2f");
 
 		ImGui::End();
 

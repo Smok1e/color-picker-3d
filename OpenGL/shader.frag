@@ -3,8 +3,12 @@
 //---------------------------------
 
 uniform float ambientLightningStrength;
+uniform float diffuseLightningStrength;
+uniform float specularLightningStrength;
+
 uniform vec3 lightPos;
 uniform vec4 lightColor;
+uniform vec3 viewPos;
 
 in vec3 vertexNormal;
 in vec4 vertexColor;
@@ -22,9 +26,16 @@ void main ()
     vec3 ambient = ambientLightningStrength*ambientColor;
 
     vec3 lightDirection = normalize(lightPos-fragPos);
-    vec3 diffuse = max(dot(vertexNormal, lightDirection), 0.0) * vec3(lightColor);
+    float diff = max(dot(vertexNormal, lightDirection), 0.0);
+    vec3 diffuse =  diffuseLightningStrength * diff * vec3(lightColor);
 
-    color = vec4(ambient+diffuse, 1)*vertexColor;
+    vec3 viewDirection = normalize(viewPos-fragPos);
+    vec3 reflectionDirection = reflect(-lightDirection, vertexNormal);
+
+    float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), 32);
+    vec3 specular = specularLightningStrength * spec * vec3(lightColor);
+
+    color = vec4(ambient+diffuse+specular, 1)*vertexColor;
 }
 
 //---------------------------------
