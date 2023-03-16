@@ -14,8 +14,7 @@ public:
 	~Sphere();
 
 	void destroy();
-
-	void draw();
+	void draw(Shader* shader = nullptr);
 
 	void      setPosition(const glm::vec3& position);
 	glm::vec3 getPosition() const;
@@ -36,6 +35,7 @@ protected:
 	GLuint m_vertex_buffer;
 	GLuint m_vertex_array;
 	GLuint m_index_buffer;
+	size_t m_index_count;
 	glm::vec3 m_position;
 
 	size_t m_latitude_points;

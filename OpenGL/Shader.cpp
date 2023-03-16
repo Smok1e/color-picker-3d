@@ -191,46 +191,70 @@ void Shader::use()
 
 //---------------------------------
 
-void Shader::setUniform(const char* name, const glm::mat4& matrix)
+bool Shader::setUniform(const char* name, const glm::mat4& matrix)
 {
 	GLint location = getUniformLocation(name);
-	if (location != -1)
-		glProgramUniformMatrix4fv(m_program_handle, location, 1, GL_FALSE, glm::value_ptr(matrix)); glcheck;
+	if (location == -1)
+		return false;
+
+	glProgramUniformMatrix4fv(m_program_handle, location, 1, GL_FALSE, glm::value_ptr(matrix)); 
+	glcheck;
+	return true;
 }
 
-void Shader::setUniform(const char* name, const glm::vec3& vector)
+bool Shader::setUniform(const char* name, const glm::vec3& vector)
 {
 	GLint location = getUniformLocation(name);
-	if (location != -1)
-		glProgramUniform3f(m_program_handle, location, vector.x, vector.y, vector.z); glcheck;
+	if (location == -1)
+		return false;
+
+	glProgramUniform3f(m_program_handle, location, vector.x, vector.y, vector.z); 
+	glcheck;
+	return true;
 }
 
-void Shader::setUniform(const char* name, const glm::vec4& vector)
+bool Shader::setUniform(const char* name, const glm::vec4& vector)
 {
 	GLint location = getUniformLocation(name);
-	if (location != -1)
-		glProgramUniform4f(m_program_handle, location, vector.x, vector.y, vector.z, vector.w); glcheck;
+	if (location == -1)
+		return false;
+
+	glProgramUniform4f(m_program_handle, location, vector.x, vector.y, vector.z, vector.w); 
+	glcheck;
+	return true;
 }
 
-void Shader::setUniform(const char* name, const Color& color)
+bool Shader::setUniform(const char* name, const Color& color)
 {
 	GLint location = getUniformLocation(name);
-	if (location != -1)
-		glProgramUniform4f(m_program_handle, location, color.r, color.g, color.b, color.a); glcheck;
+	if (location == -1)
+		return false;
+
+	glProgramUniform4f(m_program_handle, location, color.r, color.g, color.b, color.a); 
+	glcheck;
+	return true;
 }
 
-void Shader::setUniform(const char* name, int value)
+bool Shader::setUniform(const char* name, int value)
 {
 	GLint location = getUniformLocation(name);
-	if (location != -1)
-		glProgramUniform1i(m_program_handle, location, value); glcheck;
+	if (location == -1)
+		return false;
+
+	glProgramUniform1i(m_program_handle, location, value); 
+	glcheck;
+	return true;
 }
 
-void Shader::setUniform(const char* name, float value)
+bool Shader::setUniform(const char* name, float value)
 {
 	GLint location = getUniformLocation(name);
-	if (location != -1)
-		glProgramUniform1f(m_program_handle, location, value); glcheck;
+	if (location == -1)
+		return false;
+
+	glProgramUniform1f(m_program_handle, location, value); 
+	glcheck;
+	return true;
 }
 
 //---------------------------------

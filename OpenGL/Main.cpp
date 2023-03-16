@@ -23,6 +23,7 @@ constexpr bool  FullscreenMode = false;
 int   SphereHorizontalPointCount = 16;
 int   SphereVerticalPointCount   = 16;
 float SphereRadius               = .5f;
+Color SphereColor                = Color::FromBytesRGB(0, 170, 255);
 
 float FieldOfView = 45;
 Camera TheCamera;
@@ -120,11 +121,7 @@ int main()
 		return 0;
 	}
 
-	Sphere sphere1;
-	Sphere sphere2;
-	Cube cube;
-	sphere2.setPosition(glm::vec3(1, 1, 1));
-	sphere2.setPointCount(128, 128);
+	Sphere sphere;
 
 	float last_fov = -1;
 	while (!glfwWindowShouldClose(window))
@@ -163,17 +160,13 @@ int main()
 		TheCamera.addVelocity(movement*speed);
 		TheCamera.update();
 
-		sphere1.setPointCount(SphereHorizontalPointCount, SphereVerticalPointCount);
-		sphere1.setRadius(SphereRadius);
+		sphere.setPointCount(SphereHorizontalPointCount, SphereVerticalPointCount);
+		sphere.setRadius(SphereRadius);
+		sphere.setColor(SphereColor);
 
-		shader.setUniform("projection",                ProjectionMatrix   );
-		shader.setUniform("view",                      TheCamera.getView());
-
-		shader.use();
-		sphere1.draw();
-
-		sphere2.draw();
-		//cube.draw();
+		shader.setUniform("projection", ProjectionMatrix   );
+		shader.setUniform("view",       TheCamera.getView());
+		sphere.draw(&shader);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -218,6 +211,7 @@ void DrawInterface()
 			ImGui::SliderInt  ("Horizontal points", &SphereHorizontalPointCount, 4, 256);
 			ImGui::SliderInt  ("Vertical points",   &SphereVerticalPointCount,   4, 256);
 			ImGui::SliderFloat("Radius",            &SphereRadius, .1f, 5.f, "%.2f");
+			ImGui::ColorEdit4 ("Color",             SphereColor.data);
 		}
 
 		ImGui::End();

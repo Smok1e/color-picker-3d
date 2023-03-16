@@ -28,6 +28,14 @@ public:
 	constexpr operator glm_vec4_t() const { return glm_vector; }
 	constexpr operator glm_vec3_t() const { return glm_vector; }
 
+	constexpr bool operator==(const Color& that) const {
+		return r == that.r && g == that.g && b == that.b && a == that.a;
+	}
+
+	constexpr bool operator!=(const Color& that) const {
+		return r != that.r || g != that.g || b != that.b || a != that.a;
+	}
+
 	union
 	{
 		struct { GLfloat r, g, b, a; };

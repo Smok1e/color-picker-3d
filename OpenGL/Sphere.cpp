@@ -14,10 +14,12 @@ Sphere::Sphere():
 	m_vertex_buffer(0),
 	m_vertex_array(0),
 	m_index_buffer(0),
+	m_index_count(0),
 	m_position(0),
 	m_latitude_points(16),
 	m_longitude_points(16),
-	m_radius(.5f)
+	m_radius(.5f),
+	m_color(Color::White)
 {
 	/*
 	constexpr size_t points_count = 128;
@@ -69,7 +71,7 @@ void Sphere::updateVertexData()
 
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
-	for (size_t lat = 1, indicator = 0; lat <= m_latitude_points; lat++)
+	for (size_t lat = 1, index = 0; lat <= m_latitude_points; lat++)
 	{
 		double alpha0 = M_PI *(static_cast<double>(lat-1)/m_latitude_points - .5);
 		double z0     = sin(alpha0);
@@ -85,27 +87,15 @@ void Sphere::updateVertexData()
            double x = cos(beta);
            double y = sin(beta);
 
-		   Color color = Color(0.f, .7f, 1.f, .8f); //Color::HSV(255*(static_cast<double>(lng)/m_longitude_points), 255, 255);
+		   vertices.push_back(glm::vec3(x*zr0, y*zr0, z0)*m_radius);
 
-		   glm::vec3 position0 = glm::vec3(x*zr0, y*zr0, z0)*m_radius;
-		   vertices.push_back(Vertex(
-			   position0,
-			   glm::normalize(position0),
-			   color 
-		   ));
+           indices.push_back(index);
+		   index++;
 
-           indices.push_back(indicator);
-		   indicator++;
+		   vertices.push_back(glm::vec3(x*zr1, y*zr1, z1)*m_radius);
 
-		   glm::vec3 position1 = glm::vec3(x*zr1, y*zr1, z1)*m_radius;
-		   vertices.push_back(Vertex(
-			   position1,
-			   glm::normalize(position1),
-			   color 
-		   ));
-
-           indices.push_back(indicator);
-		   indicator++;
+           indices.push_back(index);
+		   index++;
         }
 
         indices.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
@@ -118,17 +108,14 @@ void Sphere::updateVertexData()
 	glGenVertexArrays(1, &m_vertex_array);
 	glBindVertexArray(m_vertex_array);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, nullptr);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(3*sizeof(float)));
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(6*sizeof(float)));
 	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
     glGenBuffers(1, &m_index_buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);	
+	m_index_count = indices.size();
 }
 
 void Sphere::destroy()
@@ -141,29 +128,20 @@ void Sphere::destroy()
 
 //---------------------------------
 
-void Sphere::draw()
+void Sphere::draw(Shader* shader /*= nullptr*/)
 {
-	GLint program = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-	if (program)
+	if (shader)
 	{
-		GLint location = glGetUniformLocation(program, "offset");
-		if (location != -1)
-			glUniform3f(location, m_position.x, m_position.y, m_position.z);
+		shader -> setUniform("shapeColor",  m_color   );
+		shader -> setUniform("shapeOffset", m_position);
+		shader -> use();
 	}
 
-	GLint index_buffer_size = 0;
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer);
-	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &index_buffer_size);
-	size_t index_count = index_buffer_size / sizeof GLuint;
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    // draw sphere
     glBindVertexArray(m_vertex_array);
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer);
-    glDrawElements(GL_QUAD_STRIP, index_count, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_QUAD_STRIP, m_index_count, GL_UNSIGNED_INT, NULL);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
@@ -211,9 +189,14 @@ float Sphere::getRadius() const
 	return m_radius;
 }
 
-void Sphere::setColor(Color color)
+void Sphere::setColor(const Color& color)
 {
 	m_color = color;
+}
+
+Color Sphere::getColor() const
+{
+	return m_color;
 }
 
 //---------------------------------

@@ -54,12 +54,12 @@ public:
 	Shader& operator= (const Shader& that) = delete; // Copying not allowed, di nah cerf
 
 	// Uniforms
-	void setUniform(const char* name, const glm::mat4& matrix);
-	void setUniform(const char* name, const glm::vec3& vector);
-	void setUniform(const char* name, const glm::vec4& vector);
-	void setUniform(const char* name, const Color& color);
-	void setUniform(const char* name, int   value);
-	void setUniform(const char* name, float value);
+	bool setUniform(const char* name, const glm::mat4& matrix);
+	bool setUniform(const char* name, const glm::vec3& vector);
+	bool setUniform(const char* name, const glm::vec4& vector);
+	bool setUniform(const char* name, const Color& color);
+	bool setUniform(const char* name, int   value);
+	bool setUniform(const char* name, float value);
 
 protected:
 	GLuint m_program_handle;
