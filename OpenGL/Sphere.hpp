@@ -3,6 +3,7 @@
 #include <gl/glew.h>
 #include <glm/glm.hpp>
 #include "Shader.hpp"
+#include "Color.hpp"
 
 //---------------------------------
 
@@ -23,6 +24,9 @@ public:
 	size_t getLatitudePointCount() const;
 	size_t getLongitudePointCount() const;
 
+	void setColor(const Color& color);
+	Color getColor() const;
+
 	void setRadius(float radius);
 	float getRadius() const;
 
@@ -37,6 +41,7 @@ protected:
 	size_t m_latitude_points;
 	size_t m_longitude_points;
 	float m_radius;
+	Color m_color;
 
 };
 

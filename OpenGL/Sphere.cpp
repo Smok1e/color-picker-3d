@@ -211,4 +211,9 @@ float Sphere::getRadius() const
 	return m_radius;
 }
 
+void Sphere::setColor(Color color)
+{
+	m_color = color;
+}
+
 //---------------------------------

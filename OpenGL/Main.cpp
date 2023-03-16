@@ -24,11 +24,6 @@ int   SphereHorizontalPointCount = 16;
 int   SphereVerticalPointCount   = 16;
 float SphereRadius               = .5f;
 
-float AmbientLightningStrength  = .2f;
-float DiffuseLightningStrength  = 1.f;
-float SpecularLightningStrength = .5f;
-Color LightColor = Color::FromStringHexRGB("#FBFED2");
-
 float FieldOfView = 45;
 Camera TheCamera;
 glm::mat4 ProjectionMatrix;
@@ -129,6 +124,7 @@ int main()
 	Sphere sphere2;
 	Cube cube;
 	sphere2.setPosition(glm::vec3(1, 1, 1));
+	sphere2.setPointCount(128, 128);
 
 	float last_fov = -1;
 	while (!glfwWindowShouldClose(window))
@@ -170,14 +166,8 @@ int main()
 		sphere1.setPointCount(SphereHorizontalPointCount, SphereVerticalPointCount);
 		sphere1.setRadius(SphereRadius);
 
-		shader.setUniform("projection",                ProjectionMatrix         );
-		shader.setUniform("view",                      TheCamera.getView()      );
-		shader.setUniform("viewPos",                   TheCamera.getPosition()  );
-		shader.setUniform("ambientLightningStrength",  AmbientLightningStrength );
-		shader.setUniform("diffuseLightningStrength",  DiffuseLightningStrength );
-		shader.setUniform("specularLightningStrength", SpecularLightningStrength);
-		shader.setUniform("lightPos",                  glm::vec3(2, 2, 2)       );
-		shader.setUniform("lightColor",                LightColor               );
+		shader.setUniform("projection",                ProjectionMatrix   );
+		shader.setUniform("view",                      TheCamera.getView());
 
 		shader.use();
 		sphere1.draw();
@@ -221,14 +211,6 @@ void DrawInterface()
 			ImGui::Checkbox("Enable depth test", &depth_test_enabled);
 
 			ImGui::SliderFloat("FOV", &FieldOfView, 1, 180);
-		}
-
-		if (ImGui::CollapsingHeader("Lightning"))
-		{
-			ImGui::SliderFloat("Ambient lightning strength",  &AmbientLightningStrength,  0, 1, "%.2f");
-			ImGui::SliderFloat("Diffuse lightning strength",  &DiffuseLightningStrength,  0, 1, "%.2f");
-			ImGui::SliderFloat("Specular lightning strength", &SpecularLightningStrength, 0, 1, "%.2f");
-			ImGui::ColorEdit3("Light color", LightColor.data);
 		}
 
 		if (ImGui::CollapsingHeader("Sphere"))
