@@ -66,6 +66,11 @@ Color Color::FromStringHexRGB(const char* hexstring)
 	else          return Color::FromBytesRGB(bytes[3], bytes[2], bytes[1], bytes[0]);
 }
 
+Color Color::Random()
+{
+	return Color::FromBytesRGB(rand()%256, rand()%256, rand()%256);
+}
+
 //-----------------------------------
 
 char* Color::toStringHexRGB(char* buffer, size_t limit /*= 0*/) const

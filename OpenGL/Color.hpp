@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cstdint>
 #include <glm/glm.hpp>
 #include <GL/glew.h>
@@ -22,6 +23,7 @@ public:
 
 	static Color FromBytesRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 	static Color FromStringHexRGB(const char* hexstring);
+	static Color Random();
 
 	char* toStringHexRGB(char* buffer, size_t limit = 0) const;
 

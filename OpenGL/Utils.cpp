@@ -1,5 +1,7 @@
 #include "Utils.hpp"
 #include <Windows.h>
+#include <filesystem>
+#include <fstream>
 
 //-----------------------------------
 
@@ -14,7 +16,7 @@ void CheckOpenGLError(const char* func, int line)
 
 		char text[2048] = "";
 		sprintf_s(
-			text, 
+			text,
 			"OpenGL error: %s (0x%04X)\n"
 			"Detected in function %s at line #%d\n"
 			"\n"
@@ -44,7 +46,7 @@ void GetOpenGLErrorMessage(GLenum code, const char** pname, const char** pdescri
 	{
 		__case(
 			GL_INVALID_ENUM,
-			"Given when an enumeration parameter is not a legal enumeration for that function. " 
+			"Given when an enumeration parameter is not a legal enumeration for that function. "
 			"This is given only for local problems; if the spec allows the enumeration in certain "
 			"circumstances, where other parameters or state dictate those circumstances, "
 			"then GL_INVALID_OPERATION is the result instead."
@@ -65,17 +67,17 @@ void GetOpenGLErrorMessage(GLenum code, const char** pname, const char** pdescri
 			"legal parameters are."
 		)
 
-		__case(
-			GL_STACK_OVERFLOW,
-			"Given when a stack pushing operation cannot be done because it would overflow the limit "
-			"of that stack's size."
-		)
+			__case(
+				GL_STACK_OVERFLOW,
+				"Given when a stack pushing operation cannot be done because it would overflow the limit "
+				"of that stack's size."
+			)
 
-		__case(
-			GL_STACK_UNDERFLOW,
-			"Given when a stack popping operation cannot be done because the stack is already at its "
-			"lowest point."
-		);
+			__case(
+				GL_STACK_UNDERFLOW,
+				"Given when a stack popping operation cannot be done because the stack is already at its "
+				"lowest point."
+			);
 
 		__case(
 			GL_OUT_OF_MEMORY,
@@ -108,8 +110,89 @@ void GetOpenGLErrorMessage(GLenum code, const char** pname, const char** pdescri
 
 void glSetEnabled(GLenum index, bool state)
 {
-	if (state) glEnable (index);
+	if (state) glEnable(index);
 	else       glDisable(index);
 }
+
+//-----------------------------------
+
+size_t ReadStream(std::ifstream& stream, std::vector <char>* buffer)
+{
+	stream.seekg(0, std::ios::end);
+
+	std::streamoff file_size = stream.tellg();
+	if (file_size)
+	{
+		stream.seekg(0, std::ios::beg);
+		buffer->resize(static_cast<unsigned>(file_size));
+		stream.read(buffer->data(), file_size);
+		buffer->push_back('\0');
+	}
+
+	return buffer->size();
+}
+
+size_t ReadStreamBinary(std::ifstream& stream, std::vector<uint8_t>* buffer)
+{
+	stream.seekg(0, std::ios::end);
+	std::streamoff file_size = stream.tellg();
+	if (file_size)
+	{
+		stream.seekg(0, std::ios::beg);
+		buffer->resize(static_cast<unsigned>(file_size));
+		stream.read(reinterpret_cast<char*>(buffer->data()), file_size);
+	}
+
+	return buffer->size();
+}
+
+//-----------------------------------
+
+const char* StrPBRK(const char* begin, const char* delimiters, const char* limit /*= nullptr*/)
+{
+	for (const char* str = begin; *str; str++)
+		if ((limit && str >= limit) || strchr(delimiters, *str)) return str;
+
+	return nullptr;
+}
+
+const char* StrPBRKI(const char* begin, const char* delimiters, const char* limit /*= nullptr*/)
+{
+	for (const char* str = begin; *str; str++)
+		if ((limit && str >= limit) || !strchr(delimiters, *str)) return str;
+
+	return nullptr;
+}
+
+const char* StrPBRK2(const char* begin, const char* delimiters1, const char* delimiters2, const char* limit /*= nullptr*/)
+{
+	for (const char* str = begin; *str; str++)
+		if ((limit && str >= limit) || (strchr(delimiters1, *str) || strchr(delimiters2, *str))) return str;
+
+	return nullptr;
+}
+
+bool IsFloatStr(const char* begin, const char* limit /*= nullptr*/)
+{
+	constexpr const char* allowed_chars = ".-0123456789";
+	for (const char* str = begin; *str && (!limit || str < limit); str++)
+		if (!strchr(allowed_chars, *str)) return false;
+
+	return true;
+}
+
+//-----------------------------------
+
+namespace std
+{
+
+std::string to_string(const glm::vec3& vector)
+{
+	static char buffer[BUFFSIZE] = "";
+	sprintf_s(buffer, BUFFSIZE, "{%.2f, %.2f, %.2f}", vector.x, vector.y, vector.z);
+	return std::string(buffer);
+}
+
+} // namespace std
 
 //-----------------------------------

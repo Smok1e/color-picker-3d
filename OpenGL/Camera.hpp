@@ -1,3 +1,5 @@
+#pragma once
+
 #include <glm/glm.hpp>
 
 //-----------------------------------
@@ -14,7 +16,7 @@ public:
 
 	void setVelocity(const glm::vec3& velocity);
 	void addVelocity(const glm::vec3& velocity);
-	glm::vec3 getVelocity() const;
+	glm::vec3 getVelocity() const;									  
 
 	void setRotation(const glm::vec2& rotation);
 	void addRotation(const glm::vec2& rotation);

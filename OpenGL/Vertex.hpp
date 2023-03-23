@@ -1,4 +1,5 @@
 #pragma once
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
@@ -15,6 +16,14 @@ public:
 	Vertex(const glm::vec3& position);
 
 	glm::vec3 position;
+
+	constexpr float& operator[](size_t index) {
+		return position[index];
+	}
+
+	constexpr float operator[](size_t index) const {
+		return position[index];
+	}
 };
 #pragma pack(pop)
 

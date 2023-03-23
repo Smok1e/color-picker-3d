@@ -258,21 +258,3 @@ bool Shader::setUniform(const char* name, float value)
 }
 
 //---------------------------------
-
-size_t ReadStream(std::ifstream& stream, std::vector <char>* buffer)
-{
-	stream.seekg(0, std::ios::end);
-
-	std::streamoff file_size = stream.tellg();
-	if (file_size)
-	{
-		stream.seekg(0, std::ios::beg);
-		buffer->resize(static_cast <unsigned> (file_size));
-		stream.read(buffer->data(), file_size);
-		buffer->push_back('\0');
-	}
-
-	return buffer->size();
-}
-
-//---------------------------------

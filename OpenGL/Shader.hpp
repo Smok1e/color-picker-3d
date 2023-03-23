@@ -1,7 +1,5 @@
 #pragma once
 
-//---------------------------------
-
 #include <string>
 #include <fstream>
 #include <filesystem>
@@ -68,10 +66,5 @@ protected:
 	GLint getUniformLocation(const char* name);
 
 };
-
-//---------------------------------
-
-// Reads all content from stream into a vector
-size_t ReadStream(std::ifstream& stream, std::vector <char>* buffer);
 
 //---------------------------------
