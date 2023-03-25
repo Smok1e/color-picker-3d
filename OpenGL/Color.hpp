@@ -20,6 +20,7 @@ public:
 	Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.f);
 	Color(const glm_vec4_t& glm_vector);
 	Color(const glm_vec3_t& glm_vector);
+	Color(const char* hexstring);
 
 	static Color FromBytesRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 	static Color FromStringHexRGB(const char* hexstring);

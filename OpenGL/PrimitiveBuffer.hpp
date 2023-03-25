@@ -2,8 +2,13 @@
 #include <vector>
 
 #include "Primitive.hpp"
+#include "Light.hpp"
 #include "Shader.hpp"
 #include "Camera.hpp"
+
+//-----------------------------------
+
+extern const unsigned LIGHTS_MAX;
 
 //-----------------------------------
 
@@ -17,7 +22,9 @@ public:
 	~PrimitiveBuffer();
 
 	bool addObject(Primitive* object);
+	bool addObject(Light* light);
 	bool deleteObject(Primitive* object);
+	bool deleteObject(Light* light);
 	void drawObjects(Shader* shader = nullptr);
 
 	template<typename primitive_t> primitive_t* operator+=(primitive_t* object);
@@ -31,6 +38,7 @@ public:
 
 protected:
 	std::vector<Primitive*> m_objects;
+	std::vector<Light*>     m_lights;
 
 };
 

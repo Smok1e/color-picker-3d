@@ -1,5 +1,6 @@
 #pragma once
 #include "Primitive.hpp"
+#include "Texture.hpp"
 
 //-----------------------------------
 
@@ -18,6 +19,7 @@ protected:
 	virtual void updateVertexData();
 
 	std::vector<Vertex> m_vertices;
+	Texture* m_texture;
 
 };
 

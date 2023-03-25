@@ -257,4 +257,21 @@ bool Shader::setUniform(const char* name, float value)
 	return true;
 }
 
+bool Shader::setUniform(const char* name, bool value)
+{
+	return setUniform(name, value? 1: 0);
+}
+
+bool Shader::setUniform(const char* name, const Texture& texture)
+{
+	GLint location = getUniformLocation(name);
+	if (location == -1)
+		return false;
+
+	// Anal magic
+	glProgramUniform1i(m_program_handle, location, texture.getNativeHandle());
+	glActiveTexture(GL_TEXTURE0 + texture.getNativeHandle());
+	texture.bind();
+}
+
 //---------------------------------

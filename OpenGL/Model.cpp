@@ -14,7 +14,8 @@ const char* INDEX_DELIMITERS = "/";
 
 Model::Model():
 	Primitive(),
-	m_vertices()
+	m_vertices(),
+	m_texture(nullptr)
 {}
 
 //-----------------------------------
@@ -22,6 +23,7 @@ Model::Model():
 bool Model::loadFromMemory(const std::string& data)
 {
 	std::vector<glm::vec3> position_data;
+	std::vector<glm::vec3> normal_data;
 	std::vector<Vertex> vertices;
 
 	#define error(format, ...) {                               \
@@ -68,6 +70,28 @@ bool Model::loadFromMemory(const std::string& data)
 			position_data.push_back(position);
 		}
 
+		// Normal
+		else if (!strncmp("vn", header_begin, header_len))
+		{
+			glm::vec3 normal(0, 0, 0);
+
+			const char* data_begin = StrPBRKI(header_end, DATA_DELIMITERS, line_end);
+			const char* data_end = StrPBRK(data_begin, DATA_DELIMITERS, line_end);
+			for (size_t i = 0; i < 3; i++)
+			{
+				if (!data_end) 
+					error("Invalid vertex normal data\n");
+
+				if (!IsFloatStr(data_begin, data_end)) 
+					error("Invalid normal coordinate #%zu (at character %zu)\n", i+1, data_begin-line_begin+1);
+
+				normal[i] = strtof(data_begin, const_cast<char**>(&data_end));
+				data_end = StrPBRK(data_begin = data_end+1, DATA_DELIMITERS, line_end);
+			}
+
+			normal_data.push_back(normal);
+		}
+
 		// Face
 		else if (!strncmp("f", header_begin, header_len))
 		{
@@ -83,7 +107,7 @@ bool Model::loadFromMemory(const std::string& data)
 
 				Vertex vertex;
 
-				// Parsing index as 'vertex/uv/normal'
+				// Parsing face as 'vertex/uv/normal'
 				const char* index_begin = data_begin;
 				const char* index_end = StrPBRK(index_begin, INDEX_DELIMITERS, data_end);
 				for (size_t component_index = 0; component_index < 3; component_index++)
@@ -91,17 +115,36 @@ bool Model::loadFromMemory(const std::string& data)
 					if (!index_end || index_end > data_end)
 						error("Expeced 3 indices for vertex, got only %zu (vertex #%zu)\n", component_index, vertex_index);
 
+					if (strchr(INDEX_DELIMITERS, *index_begin))
+					{
+						index_begin++;
+						continue;
+					}
+
 					unsigned index = strtoul(index_begin, const_cast<char**>(&index_end), 10);
 
 					// Position index
 					if (component_index == 0)
 					{
 						if (!index || (index-1) >= position_data.size())
-							error("Vertex position index is out of range. Expected from 1 to %zu, got %lu", position_data.size(), index);
+							error("Vertex position index is out of range. Expected from 1 to %zu, got %lu\n", position_data.size(), index);
 
 						// In .obj file indices are starting from 1
 						vertex.position = position_data[index-1];
 					}
+
+					// Normal index
+					else if (component_index == 1)
+					{
+						if (!index)
+							error("Vertex normal index is out of range. Expected from 1 to %zu, got %lu\n", normal_data.size(), index);
+
+						if ((index-1) >= normal_data.size())
+							index = normal_data.size();
+
+						vertex.normal = normal_data[index-1];
+					}
+
 					index_end = StrPBRK(index_begin = index_end+1, INDEX_DELIMITERS, data_end);
 				}
 
@@ -172,11 +215,8 @@ void Model::updateVertexData()
 	glGenBuffers(1, &m_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
 	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof Vertex, m_vertices.data(), GL_STATIC_DRAW);
-
 	glGenVertexArrays(1, &m_vertex_array);
-	glBindVertexArray(m_vertex_array);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, nullptr);
-	glEnableVertexAttribArray(0);
+	Vertex::InitAttributes();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }

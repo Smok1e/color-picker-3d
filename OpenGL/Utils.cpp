@@ -5,7 +5,7 @@
 
 //-----------------------------------
 
-void CheckOpenGLError(const char* func, int line)
+void CheckOpenGLError(const char* file, const char* func, int line)
 {
 	if (GLenum code = glGetError())
 	{
@@ -16,13 +16,17 @@ void CheckOpenGLError(const char* func, int line)
 
 		char text[2048] = "";
 		sprintf_s(
-			text,
+			text,					   
 			"OpenGL error: %s (0x%04X)\n"
-			"Detected in function %s at line #%d\n"
+			"Detected in:\n"
+			"File: %s\n"
+			"Function: %s\n"
+			"Line #%d\n"
 			"\n"
 			"%s",
 			name,
 			code,
+			file,
 			func,
 			line,
 			description
@@ -46,49 +50,49 @@ void GetOpenGLErrorMessage(GLenum code, const char** pname, const char** pdescri
 	{
 		__case(
 			GL_INVALID_ENUM,
-			"Given when an enumeration parameter is not a legal enumeration for that function. "
-			"This is given only for local problems; if the spec allows the enumeration in certain "
-			"circumstances, where other parameters or state dictate those circumstances, "
+			"Given when an enumeration parameter is not a legal enumeration for that function.\n"
+			"This is given only for local problems; if the spec allows the enumeration in certain\n"
+			"circumstances, where other parameters or state dictate those circumstances,\n"
 			"then GL_INVALID_OPERATION is the result instead."
 		);
 
 		__case(
 			GL_INVALID_VALUE,
-			"Given when a value parameter is not a legal value for that function. This is only "
-			"given for local problems; if the spec allows the value in certain circumstances, "
-			"where other parameters or state dictate those circumstances, then GL_INVALID_OPERATION "
+			"Given when a value parameter is not a legal value for that function. This is only\n"
+			"given for local problems; if the spec allows the value in certain circumstances,\n"
+			"where other parameters or state dictate those circumstances, then GL_INVALID_OPERATION\n"
 			"is the result instead."
 		);
 
 		__case(
 			GL_INVALID_OPERATION,
-			"Given when the set of state for a command is not legal for the parameters given to that "
-			"command. It is also given for commands where combinations of parameters define what the "
+			"Given when the set of state for a command is not legal for the parameters given to that\n"
+			"command. It is also given for commands where combinations of parameters define what the\n"
 			"legal parameters are."
 		)
 
 			__case(
 				GL_STACK_OVERFLOW,
-				"Given when a stack pushing operation cannot be done because it would overflow the limit "
+				"Given when a stack pushing operation cannot be done because it would overflow the limit\n"
 				"of that stack's size."
 			)
 
 			__case(
 				GL_STACK_UNDERFLOW,
-				"Given when a stack popping operation cannot be done because the stack is already at its "
+				"Given when a stack popping operation cannot be done because the stack is already at its\n"
 				"lowest point."
 			);
 
 		__case(
 			GL_OUT_OF_MEMORY,
-			"Given when performing an operation that can allocate memory, and the memory cannot be "
-			"allocated. The results of OpenGL functions that return this error are undefined; it "
+			"Given when performing an operation that can allocate memory, and the memory cannot be\n"
+			"allocated. The results of OpenGL functions that return this error are undefined; it\n"
 			"is allowable for partial execution of an operation to happen in this circumstance."
 		);
 
 		__case(
 			GL_INVALID_FRAMEBUFFER_OPERATION,
-			"Given when doing anything that would attempt to read from or write/render to a "
+			"Given when doing anything that would attempt to read from or write/render to a\n"
 			"framebuffer that is not complete."
 		);
 

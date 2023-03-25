@@ -3,14 +3,19 @@
 
 //-----------------------------------
 
+const unsigned LIGHTS_MAX = 32;
+
+//-----------------------------------
+
 PrimitiveBuffer::PrimitiveBuffer():
-	m_objects()
+	m_objects(),
+	m_lights()
 {}
 
 PrimitiveBuffer::~PrimitiveBuffer()
 {
-	for (auto& object: m_objects) 
-		delete object;
+	for (auto& object: m_objects) delete object;
+	for (auto& light:  m_lights ) delete light;
 }
 
 //-----------------------------------
@@ -25,6 +30,16 @@ bool PrimitiveBuffer::addObject(Primitive* object)
 	return true;
 }
 
+bool PrimitiveBuffer::addObject(Light* light)
+{
+	auto iter = std::find(m_lights.begin(), m_lights.end(), light);
+	if (iter != m_lights.end())
+		return false;
+
+	m_lights.push_back(light);
+	return true;
+}
+
 bool PrimitiveBuffer::deleteObject(Primitive* object)
 {
 	iterator iter = std::find(begin(), end(), object);
@@ -36,10 +51,34 @@ bool PrimitiveBuffer::deleteObject(Primitive* object)
 	return true;
 }
 
+bool PrimitiveBuffer::deleteObject(Light* light)
+{
+	auto iter = std::find(m_lights.begin(), m_lights.end(), light);
+	if (iter == m_lights.end())
+		return false;
+
+	m_lights.erase(iter);
+	delete light;
+	return true;
+}
+
 //-----------------------------------
 
 void PrimitiveBuffer::drawObjects(Shader* shader /*= nullptr*/)
 {
+	if (shader)
+	{
+		for (size_t i = 0, lights_count = m_lights.size(); i < lights_count && i < LIGHTS_MAX; i++)
+		{
+			Light* light = m_lights[i];
+			shader->setUniformFormatted(light->getPosition(),         "lights[%zu].position", i);
+			shader->setUniformFormatted(light->getColor(),            "lights[%zu].color",    i);
+			shader->setUniformFormatted(light->getAmbientStrength(),  "lights[%zu].ambient",  i);
+			shader->setUniformFormatted(light->getDiffuseStrength(),  "lights[%zu].diffuse",  i);
+			shader->setUniformFormatted(light->getSpecularStrength(), "lights[%zu].specular", i);
+		}
+	}
+
 	for (const auto& object: m_objects)
 		object -> draw(shader);
 }

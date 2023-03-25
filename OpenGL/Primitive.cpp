@@ -1,5 +1,7 @@
-#include "Primitive.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "Primitive.hpp"
+#include "Utils.hpp"
 
 //---------------------------------
 
@@ -11,7 +13,9 @@ Primitive::Primitive():
 	m_scale(glm::vec3(1, 1, 1)),
 	m_rotation(),
 	m_transform(glm::identity<glm::mat4>()),
-	m_color()
+	m_color(),
+	m_texture(nullptr),
+	m_use_lightning(true)
 {}
 
 Primitive::~Primitive()
@@ -23,7 +27,7 @@ Primitive::~Primitive()
 
 void Primitive::draw(Shader* shader /*= nullptr*/) const
 {
-	if (shader) bindShader(shader);
+	if (shader) bindShader(*shader);
 }
 
 //---------------------------------
@@ -69,6 +73,26 @@ Color Primitive::getColor() const
 	return m_color;
 }
 
+void Primitive::setTexture(Texture* texture)
+{
+	m_texture = texture;
+}
+
+Texture* Primitive::getTexture() const
+{
+	return m_texture;
+}
+
+void Primitive::setLightningEnabled(bool enable)
+{
+	m_use_lightning = enable;
+}
+
+bool Primitive::getLightningEnabled() const
+{
+	return m_use_lightning;
+}
+
 //---------------------------------
 
 void Primitive::updateTransform()
@@ -86,13 +110,21 @@ void Primitive::cleanup()
 	m_vertex_buffer = m_vertex_array = 0;
 }
 
-void Primitive::bindShader(Shader* shader) const
+void Primitive::bindShader(Shader& shader) const
 {
-	shader -> setUniform("shapeOffset",    m_position );
-	shader -> setUniform("shapeColor",     m_color    );
-	shader -> setUniform("shapeScale",     m_scale    );
-	shader -> setUniform("shapeTransform", m_transform);
-	shader -> use();
+	glcheck;
+	shader["shapeOffset"   ] = m_position;
+	shader["shapeColor"    ] = m_color;
+	shader["shapeScale"    ] = m_scale;
+	shader["shapeTransform"] = m_transform;
+	shader["useTexture"    ] = m_texture;
+	shader["useLightning"  ] = m_use_lightning;
+	shader["useBloom"      ] = false;
+
+	//if (m_texture) shader["shapeTexture"] = *m_texture;
+	if (m_texture) m_texture->bind();
+
+	shader.use();
 }
 
 //---------------------------------

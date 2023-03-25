@@ -1,26 +1,32 @@
 ﻿#define _USE_MATH_DEFINES
-#include <cmath>
+#define _CRT_SECURE_NO_WARNINGS
 
+#include <cmath>
+#include <cstdio>
+#include <filesystem>
+#include <algorithm>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <cstdio>
+#include <SOIL/SOIL.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
 #include "Shader.hpp"
 #include "Sphere.hpp"
+#include "SpaceSphere.hpp"
 #include "Plane.hpp"
 #include "Model.hpp"
 #include "Utils.hpp"
 #include "Camera.hpp"
 #include "PrimitiveBuffer.hpp"
+#include "Light.hpp"
 
 //-----------------------------------
 
-constexpr bool FullscreenMode   = false;
+constexpr bool FullscreenMode = false;
 
 //-----------------------------------
 
@@ -48,28 +54,8 @@ void SetInterfaceVisible(GLFWwindow* window, bool visible);
 
 //-----------------------------------
 
-glm::vec3 FindIntersectionPlane(const Sphere& s1, const Sphere& s2);
-
-//-----------------------------------
-
 int main()
 {
-	/*const char* delimiters = " .,!-?";
-	const char* line_begin = "pidor, jopa! chlen govno. klitor, sperma, fen - ono!";
-	const char* line_end = StrPBRK(line_begin, delimiters);
-
-	for (size_t token_index = 0; line_end; token_index++)
-	{
-		unsigned line_len = line_end-line_begin;
-		printf("[%zu]: '%.*s'\n", token_index, line_len, line_begin);
-
-		line_begin = StrPBRKI(line_end, delimiters);
-		if (!line_begin)  break;
-		line_end = StrPBRK(line_begin, delimiters);
-	}
-
-	return 0;*/
-
 	if (!glfwInit())
 	{
 		printf("GLFW Initialization failed\n");
@@ -136,10 +122,7 @@ int main()
 
 	Shader shader;
 	if (!shader.loadFromFile("Resources/Shaders/shader.vert", "Resources/Shaders/shader.frag"))
-	{
-		printf("Failed to load shader\n");
 		return 0;
-	}
 
 	Camera camera;
 	camera.reset();
@@ -170,22 +153,72 @@ int main()
 
 	#undef __addsphere
 	#endif
-	
+
+	Texture texture;
+	texture.loadFromFile("Resources/Textures/test.png");
+
 	//Plane* plane = scene += new Plane;
-	//plane->setSize(glm::vec2(5, 5));
 	//plane->setColor(Color::White);
+	//plane->setPosition(glm::vec3(0, 0, 0));
+	//plane->setTexture(&texture);
+	//plane->setSize(5.f * glm::vec2(static_cast<float>(texture.getSizeX())/texture.getSizeX(), static_cast<float>(texture.getSizeY())/texture.getSizeX()));
 
-	Model* model = scene += new Model;
-	if (!model->loadFromFile("Resources/Models/rat.obj"))
-		printf("Model loading failed!\n");
+	//Model* model = scene += new Model;
+	//if (!model->loadFromFile("Resources/Models/hyperstone.obj"))
+	//	printf("Model loading failed!\n");
 
-	model->setColor(Color(0, .7, 1));
-	model->setScale(glm::vec3(5, 5, 5));
-	model->setPosition(glm::vec3(0, -2, 0));
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	camera.reset();
-	camera.setRotation(glm::vec2(45, -45));
-	camera.setPosition(glm::vec3(-6, 7, 6));
+	//model->setColor(Color(0, .7, 1));
+	//model->setScale(glm::vec3(2, 2, 2));
+	//model->setPosition(glm::vec3(-5, 0, 0));
+
+	Texture earth_texture;
+	earth_texture.loadFromFile("Resources/Textures/earth_night.jpg");
+
+	Sphere* earth = scene += new Sphere;
+	earth->setRadius(2);
+	earth->setColor(Color::FromBytesRGB(0, 170, 255));
+	earth->setPointCount(64, 64);
+	earth->setTexture(&earth_texture);
+	earth->setRotation(glm::vec2(M_PI));
+
+	Texture sun_texture;
+	sun_texture.loadFromFile("Resources/Textures/sun.jpg");
+
+	Sphere* sun = scene += new Sphere;
+	sun->setLightningEnabled(false);
+	sun->setPosition(glm::vec3(0, 1, 0));
+	sun->setPointCount(64, 64);
+	sun->setRadius(4);
+	sun->setTexture(&sun_texture);
+
+	Light* sunlight = scene += new Light;
+	sunlight->setColor("#A8C0E0");
+	sunlight->setDiffuseStrength(3);
+	sunlight->setSpecularStrength(0);
+	sunlight->setAmbientStrength(0);
+
+	Light* moonlight = scene += new Light;
+	moonlight->setAmbientStrength(0.1);
+	moonlight->setDiffuseStrength(1);
+	moonlight->setColor("#ABD1FF");
+
+	Texture moon_texture;
+	moon_texture.loadFromFile("Resources/Textures/mercury.jpg");
+
+	Sphere* moon = scene += new Sphere;
+	moon->setRadius(1);
+	moon->setPointCount(64, 64);
+	moon->setTexture(&moon_texture);
+
+	Texture space_texture;
+	space_texture.loadFromFile("Resources/Textures/space1.png");
+
+	SpaceSphere* space = scene += new SpaceSphere;
+	space->setPointCount(128, 128);
+	space->setRadius(100);
+	space->setTexture(&space_texture);
+	space->setColor(Color::FromBytesRGB(0, 170, 255));
+	space->setLightningEnabled(false);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -196,7 +229,8 @@ int main()
 		ImGui::NewFrame();
 		DrawInterface(window);
 
-		glClearColor(.05, .05, .05, 1);
+		//glClearColor(.05, .05, .05, 1);
+		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::vec3 movement(
@@ -217,13 +251,27 @@ int main()
 		camera.addVelocity(movement * speed);
 		camera.update();
 
-		shader.setUniform("projection", projection);
-		shader.setUniform("view",       camera.getView());
+		//if (glfwGetKey(window, GLFW_KEY_Q)) plane->setRotation(plane->getRotation() + glm::vec2(0.01, 0));
+		//if (glfwGetKey(window, GLFW_KEY_E)) plane->setRotation(plane->getRotation() + glm::vec2(0, 0.01));
 
-		double angle = glfwGetTime();
-		model->setRotation(glm::vec2(0, angle));
-		//model->setPosition(glm::vec3(cos(angle)*5, 0, -sin(angle)*2));
+		if (glfwGetKey(window, GLFW_KEY_1)) sun->setPosition(sun->getPosition() + glm::vec3( 0.01,  0,     0   ));
+		if (glfwGetKey(window, GLFW_KEY_2)) sun->setPosition(sun->getPosition() + glm::vec3(-0.01,  0,     0   ));
+		if (glfwGetKey(window, GLFW_KEY_3)) sun->setPosition(sun->getPosition() + glm::vec3( 0,     0.01,  0   ));
+		if (glfwGetKey(window, GLFW_KEY_4)) sun->setPosition(sun->getPosition() + glm::vec3( 0,    -0.01,  0   ));
+		if (glfwGetKey(window, GLFW_KEY_5)) sun->setPosition(sun->getPosition() + glm::vec3( 0,     0,     0.01));
+		if (glfwGetKey(window, GLFW_KEY_6)) sun->setPosition(sun->getPosition() + glm::vec3( 0,     0,    -0.01));
 
+		earth->setPosition(glm::vec3(cos(glfwGetTime()/2)*14, 0, sin(glfwGetTime()/2)*14));
+
+		moon->setPosition(earth->getPosition() + glm::vec3(cos(glfwGetTime())*3, 0, sin(glfwGetTime())*3));
+		moon->setRotation(glm::vec2(0, -glfwGetTime()/2));
+		moonlight->setPosition(moon->getPosition());
+
+		space->setRotation(glm::vec2(glfwGetTime()/80, glfwGetTime()/72));
+
+		shader["projection"] = projection;
+		shader["view"      ] = camera.getView();
+		shader["viewPos"   ] = camera.getPosition();
 		scene.drawObjects(&shader);
 
 		ImGui::Render();
@@ -343,6 +391,52 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 				SetInterfaceVisible(window, !window_data->interface_visible);
 
 			break;
+		}
+
+		case GLFW_KEY_F2:
+		{
+			if (action == GLFW_PRESS)
+			{
+				const std::filesystem::path capture_directory("./captures");
+				if (!std::filesystem::exists(capture_directory))
+				{
+					printf("Creating directory %s\n", capture_directory.string().c_str());
+					std::filesystem::create_directory(capture_directory);
+				}
+
+				else if (!std::filesystem::is_directory(capture_directory))
+				{
+					printf("Can't save image: '%s' exists, but it is not directory\n", capture_directory.string().c_str());
+					return;
+				}
+
+				std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+				char filename[BUFFSIZE] = "";
+				strftime(filename, BUFFSIZE, "%d-%m-%Y_%H-%M-%S.bmp", std::localtime(&time));
+
+				std::filesystem::path path = capture_directory/filename;
+
+				GLint dims[4] = {0};
+				glGetIntegerv(GL_VIEWPORT, dims);
+				glm::uvec2 framesize(dims[2], dims[3]);
+
+				uint8_t* data = new uint8_t[3*framesize.x*framesize.y];
+				glReadPixels(0, 0, framesize.x, framesize.y, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+				// Flipping image vertically
+				for (size_t y = 0; y < framesize.y/2; y++)
+					for (size_t x = 0; x < framesize.x*3; x++)
+						std::swap(*(data+framesize.x*y*3+x), *(data+framesize.x*(framesize.y-y-1)*3+x));
+
+				if (SOIL_save_image(path.string().c_str(), SOIL_SAVE_TYPE_BMP, framesize.x, framesize.y, 3, data))
+				{
+					system((std::string("start") + path.string()).c_str());
+					printf("Capture save as '%s'\n", path.string().c_str());
+				}
+				else printf("Failed to save capture\n");
+
+				delete[] data;
+			}
 		}
 	}
 }

@@ -38,6 +38,15 @@ Color::Color(const Color::glm_vec3_t& glm_vector):
 	a(1.f)
 {}
 
+Color::Color(const char* hexstring):
+	r(0),
+	g(0),
+	b(0),
+	a(0)
+{
+	*this = FromStringHexRGB(hexstring);
+}
+
 #pragma warning(pop)
 
 //-----------------------------------

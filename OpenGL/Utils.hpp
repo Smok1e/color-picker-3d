@@ -11,21 +11,21 @@
 constexpr size_t BUFFSIZE = 1024;
 
 #if defined(_DEBUG) || defined(FORCE_GL_CHECK)
-	#define glcheck CheckOpenGLError(__FUNCSIG__, __LINE__);
+	#define glcheck CheckOpenGLError(__FILE__, __FUNCSIG__, __LINE__);
 #endif
 
 //-----------------------------------
 
 #define inspect(expression) Inspect(#expression, expression)
 
-void CheckOpenGLError(const char* func, int line);
+void CheckOpenGLError(const char* file, const char* func, int line);
 void GetOpenGLErrorMessage(GLenum code, const char** name, const char** description);
 void glSetEnabled(GLenum index, bool state);
 
 //-----------------------------------
 
 // std::strpbrk alternative
-const char* StrPBRK(const char* begin, const char* delimiters, const char* limit = nullptr);
+const char* StrPBRK(const char* begin, const char* delimiters, const char* limit = nullptr);						 
 
 // Inverted strpbrk
 const char* StrPBRKI(const char* begin, const char* delimiters, const char* limit = nullptr);

@@ -130,12 +130,15 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Plane.hpp" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="PrimitiveBuffer.cpp" />
+    <ClCompile Include="SpaceSphere.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -144,9 +147,12 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Color.hpp" />
+    <ClInclude Include="Light.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />
+    <ClInclude Include="SpaceSphere.hpp" />
+    <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Vertex.hpp" />
@@ -155,20 +161,6 @@
     <None Include="Resources\Shaders\shader.frag" />
     <None Include="Resources\Shaders\shader.vert" />
     <None Include="Sphere.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Resources\Models\rat.obj">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Resources\Models\test.obj">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-    </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

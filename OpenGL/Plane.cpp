@@ -4,7 +4,7 @@
 
 Plane::Plane():
 	Primitive(),
-	m_size(1, 1)
+	m_size(glm::vec2(1, 1))
 {
 	updateVertexData();
 }
@@ -38,11 +38,18 @@ void Plane::updateVertexData()
 {
 	cleanup();
 
+	glm::vec3 a(-m_size.x/2, 0, -m_size.y/2);
+	glm::vec3 b(-m_size.x/2, 0,  m_size.y/2);
+	glm::vec3 c( m_size.x/2, 0, -m_size.y/2);
+	glm::vec3 d( m_size.x/2, 0,  m_size.y/2);
+
+	glm::vec3 normal = glm::cross(b-a, c-b);
+
 	Vertex vertices[4] = {
-		glm::vec3(-m_size.x/2, 0, -m_size.y/2),
-		glm::vec3(-m_size.x/2, 0,  m_size.y/2),
-		glm::vec3( m_size.x/2, 0, -m_size.y/2),
-		glm::vec3( m_size.x/2, 0,  m_size.y/2),
+		Vertex(a, normal, glm::vec2(0, 0)),
+		Vertex(b, normal, glm::vec2(0, 1)),
+		Vertex(c, normal, glm::vec2(1, 0)),
+		Vertex(d, normal, glm::vec2(1, 1)),
 	};
 
 	glGenBuffers(1, &m_vertex_buffer);
@@ -51,8 +58,7 @@ void Plane::updateVertexData()
 
 	glGenVertexArrays(1, &m_vertex_array);
 	glBindVertexArray(m_vertex_array);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, nullptr);
-	glEnableVertexAttribArray(0);
+	Vertex::InitAttributes();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
