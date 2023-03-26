@@ -106,6 +106,13 @@ const Color Color::Blue       (0.f, 0.f, 1.f     );
 
 //-----------------------------------
 
+void glClearColor(const Color& color)
+{
+	glClearColor(color.r, color.g, color.b, color.a);
+}
+
+//-----------------------------------
+
 #if 0
 Color Color::HSV(uint8_t h, uint8_t s, uint8_t v, uint8_t a /*= 255*/)
 {
@@ -170,5 +177,3 @@ Color Color::HSV(uint8_t h, uint8_t s, uint8_t v, uint8_t a /*= 255*/)
 	return color;
 }
 #endif
-
-//-----------------------------------

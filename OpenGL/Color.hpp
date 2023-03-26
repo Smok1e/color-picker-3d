@@ -56,3 +56,7 @@ public:
 #pragma pack(pop)
 
 //-----------------------------------
+
+void glClearColor(const Color& color);
+
+//-----------------------------------

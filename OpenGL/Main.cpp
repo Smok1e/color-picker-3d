@@ -16,7 +16,7 @@
 
 #include "Shader.hpp"
 #include "Sphere.hpp"
-#include "SpaceSphere.hpp"
+#include "Cube.hpp"
 #include "Plane.hpp"
 #include "Model.hpp"
 #include "Utils.hpp"
@@ -33,18 +33,28 @@ constexpr bool FullscreenMode = false;
 struct WindowData
 {
 	Camera* camera;
+	Shader* shader;
 	PrimitiveBuffer* scene;
-	bool interface_visible;
+	glm::mat4* projection;
+	bool interface_visible;		
+	bool should_save_screenshot;
+	bool screenshot_hide_interface;
+	bool screenshot_show;
 };
 
 //-----------------------------------
 
+void DoRender(GLFWwindow* window);
+void DoControl(GLFWwindow* window);
 void DrawInterface(GLFWwindow* window);
 
 void GLFWErrorCallback(int error, const char* description);
 void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void GLFWCursorPosCallback(GLFWwindow* window, double x, double y);
 void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+void OnToggleRenderMode(GLFWwindow* window);
+void OnSaveScreenshot(GLFWwindow* window);
 
 // Measures cursor offset relative to window's center and puts cursor in center of window
 glm::vec2 CenterCursor(GLFWwindow* window);
@@ -134,150 +144,74 @@ int main()
 	window_data.camera = &camera;
 	window_data.scene = &scene;
 	window_data.interface_visible = false;
+	window_data.shader = &shader;
+	window_data.projection = &projection;
+	window_data.should_save_screenshot = false;
+	window_data.screenshot_hide_interface = true;
+	window_data.screenshot_show = true;
 	glfwSetWindowUserPointer(window, &window_data);
 
-	#if 0
-	#define __addsphere(x, y, z, r) 			     \
-	{ 											     \
-		Sphere* sphere = scene += new Sphere; 	     \
-		sphere->setPosition(glm::vec3(x, y, z)*.1f); \
-		sphere->setRadius(r*.1f);					 \
-		sphere->setColor(Color::Random());           \
-		sphere->setPointCount(128, 128);             \
-	}											 
-
-	__addsphere( 21,  0,  17, 26.763848785401); 
-	__addsphere( 1,  -14, 9,  15.16227512352 );
-	__addsphere(-20,  0,  14, 24.281858768853);
-	__addsphere( 6,   0, -23, 24.135541900996);
-
-	#undef __addsphere
-	#endif
-
 	Texture texture;
-	texture.loadFromFile("Resources/Textures/test.png");
+	texture.loadFromFile("Resources/Textures/wood/base.png");
+	texture.setID(Texture::ID::BaseColor);
 
-	//Plane* plane = scene += new Plane;
-	//plane->setColor(Color::White);
-	//plane->setPosition(glm::vec3(0, 0, 0));
-	//plane->setTexture(&texture);
-	//plane->setSize(5.f * glm::vec2(static_cast<float>(texture.getSizeX())/texture.getSizeX(), static_cast<float>(texture.getSizeY())/texture.getSizeX()));
+	Texture normalmap;
+	normalmap.loadFromFile("Resources/Textures/wood/normal.png");
+	normalmap.setID(Texture::ID::Normal);
 
-	//Model* model = scene += new Model;
-	//if (!model->loadFromFile("Resources/Models/hyperstone.obj"))
-	//	printf("Model loading failed!\n");
+	//auto cube = scene += new Cube;
+	//cube->setColor(Color::Red);
+	//cube->setRotation(glm::vec2(0, .2));
+	//cube->setTexture(&texture);
+	//cube->setNormalMap(&normalmap);
 
-	//model->setColor(Color(0, .7, 1));
-	//model->setScale(glm::vec3(2, 2, 2));
-	//model->setPosition(glm::vec3(-5, 0, 0));
+	auto plane = scene += new Plane;
+	plane->setColor(Color::White);
+	//plane->setPosition(glm::vec3(0, -cube->getSize().x/2, 0));
+	//plane->setSize(glm::vec2(5, 5));
+	plane->setRotation(glm::vec2(-M_PI/2, 0));
+	plane->setTexture(&texture);
+	plane->setNormalMap(&normalmap);
 
-	Texture earth_texture;
-	earth_texture.loadFromFile("Resources/Textures/earth_night.jpg");
+	auto light1 = scene += new Light;
+	light1->setAmbientStrength(0);
+	light1->setColor("#FFF7C9");
+	light1->setPosition(glm::vec3(-1, 0, 1));
 
-	Sphere* earth = scene += new Sphere;
-	earth->setRadius(2);
-	earth->setColor(Color::FromBytesRGB(0, 170, 255));
-	earth->setPointCount(64, 64);
-	earth->setTexture(&earth_texture);
-	earth->setRotation(glm::vec2(M_PI));
+	auto light_shape1 = scene += new Sphere;
+	light_shape1->setRadius(.1);
+	light_shape1->setColor(light1->getColor());
+	light_shape1->setPosition(light1->getPosition());
+	light_shape1->setPointCount(64, 64);
+	light_shape1->setLightningEnabled(false);
 
-	Texture sun_texture;
-	sun_texture.loadFromFile("Resources/Textures/sun.jpg");
+	//auto light2 = scene += new Light;
+	//light2->setAmbientStrength(0);
+	//light2->setColor("#BFE3FF");
+	//light2->setPosition(glm::vec3(1.5, 1, 2));
+	//light2->setDiffuseStrength(0);
+	//light2->setSpecularStrength(0);
 
-	Sphere* sun = scene += new Sphere;
-	sun->setLightningEnabled(false);
-	sun->setPosition(glm::vec3(0, 1, 0));
-	sun->setPointCount(64, 64);
-	sun->setRadius(4);
-	sun->setTexture(&sun_texture);
+	//auto light_shape2 = scene += new Cube;
+	//light_shape2->setSize(glm::vec3(.2));
+	//light_shape2->setColor(light2->getColor());
+	//light_shape2->setPosition(light2->getPosition());
+	//light_shape2->setLightningEnabled(false);
 
-	Light* sunlight = scene += new Light;
-	sunlight->setColor("#A8C0E0");
-	sunlight->setDiffuseStrength(3);
-	sunlight->setSpecularStrength(0);
-	sunlight->setAmbientStrength(0);
-
-	Light* moonlight = scene += new Light;
-	moonlight->setAmbientStrength(0.1);
-	moonlight->setDiffuseStrength(1);
-	moonlight->setColor("#ABD1FF");
-
-	Texture moon_texture;
-	moon_texture.loadFromFile("Resources/Textures/mercury.jpg");
-
-	Sphere* moon = scene += new Sphere;
-	moon->setRadius(1);
-	moon->setPointCount(64, 64);
-	moon->setTexture(&moon_texture);
-
-	Texture space_texture;
-	space_texture.loadFromFile("Resources/Textures/space1.png");
-
-	SpaceSphere* space = scene += new SpaceSphere;
-	space->setPointCount(128, 128);
-	space->setRadius(100);
-	space->setTexture(&space_texture);
-	space->setColor(Color::FromBytesRGB(0, 170, 255));
-	space->setLightningEnabled(false);
+	//auto cameralight = scene += new Light;
+	//cameralight->setAmbientStrength(0);
+	//cameralight->setSpecularStrength(0);
+	//cameralight->setColor(Color::White);
 
 	while (!glfwWindowShouldClose(window))
 	{
-		glfwPollEvents();
+		DoControl(window);
+		//cameralight->setPosition(camera.getPosition());
 
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		DrawInterface(window);
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) plane->setRotation(plane->getRotation()+glm::vec2(0.01, 0));
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) plane->setRotation(plane->getRotation()-glm::vec2(0.01, 0));
 
-		//glClearColor(.05, .05, .05, 1);
-		glClearColor(0, 0, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glm::vec3 movement(
-			// X
-			  (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			- (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS),
-
-			// Y
-			  (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-			- (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS),
-
-			// Z
-			  (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			- (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		);
-
-		float speed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ? .01f : .005f;
-		camera.addVelocity(movement * speed);
-		camera.update();
-
-		//if (glfwGetKey(window, GLFW_KEY_Q)) plane->setRotation(plane->getRotation() + glm::vec2(0.01, 0));
-		//if (glfwGetKey(window, GLFW_KEY_E)) plane->setRotation(plane->getRotation() + glm::vec2(0, 0.01));
-
-		if (glfwGetKey(window, GLFW_KEY_1)) sun->setPosition(sun->getPosition() + glm::vec3( 0.01,  0,     0   ));
-		if (glfwGetKey(window, GLFW_KEY_2)) sun->setPosition(sun->getPosition() + glm::vec3(-0.01,  0,     0   ));
-		if (glfwGetKey(window, GLFW_KEY_3)) sun->setPosition(sun->getPosition() + glm::vec3( 0,     0.01,  0   ));
-		if (glfwGetKey(window, GLFW_KEY_4)) sun->setPosition(sun->getPosition() + glm::vec3( 0,    -0.01,  0   ));
-		if (glfwGetKey(window, GLFW_KEY_5)) sun->setPosition(sun->getPosition() + glm::vec3( 0,     0,     0.01));
-		if (glfwGetKey(window, GLFW_KEY_6)) sun->setPosition(sun->getPosition() + glm::vec3( 0,     0,    -0.01));
-
-		earth->setPosition(glm::vec3(cos(glfwGetTime()/2)*14, 0, sin(glfwGetTime()/2)*14));
-
-		moon->setPosition(earth->getPosition() + glm::vec3(cos(glfwGetTime())*3, 0, sin(glfwGetTime())*3));
-		moon->setRotation(glm::vec2(0, -glfwGetTime()/2));
-		moonlight->setPosition(moon->getPosition());
-
-		space->setRotation(glm::vec2(glfwGetTime()/80, glfwGetTime()/72));
-
-		shader["projection"] = projection;
-		shader["view"      ] = camera.getView();
-		shader["viewPos"   ] = camera.getPosition();
-		scene.drawObjects(&shader);
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		glfwSwapBuffers(window);
+		DoRender(window);
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -290,16 +224,48 @@ int main()
 
 //-----------------------------------
 
+void DoRender(GLFWwindow* window)
+{
+	WindowData* window_data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+	if (!window_data)
+		return;
+
+	Shader& shader = *window_data->shader;
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+	DrawInterface(window);	
+
+	glClearColor(Color(.05, .05, .05));
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	shader["projection"] = *window_data->projection;
+	shader["view"      ] = window_data->camera->getView();
+	shader["viewPos"   ] = window_data->camera->getPosition();
+	window_data->scene->drawObjects(window_data->shader);
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	glfwSwapBuffers(window);
+}
+
+//-----------------------------------
+
 void DrawInterface(GLFWwindow* window)
 {
 	WindowData* window_data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 	if (!window_data)
 		return;
 
+	const std::filesystem::path camera_state_filename = "camera.dat";
+
 	if (window_data->interface_visible)
 	{
 		GLint polygon_render_mode[2] = {};
 		glGetIntegerv(GL_POLYGON_MODE, polygon_render_mode);
+
 		bool depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
 
 		ImGui::Begin("Debug");
@@ -314,6 +280,16 @@ void DrawInterface(GLFWwindow* window)
 			ImGui::Checkbox("Enable depth test", &depth_test_enabled);
 		}
 
+		if (ImGui::CollapsingHeader("Camera"))
+		{
+			if (ImGui::Button("Save camera state")) window_data->camera->saveToFile  (camera_state_filename);
+			if (ImGui::Button("Load camera state")) window_data->camera->loadFromFile(camera_state_filename);
+			if (ImGui::Button("Save screenshot")) window_data->should_save_screenshot = true;
+
+			ImGui::Checkbox("Hide interface on screenshot", &window_data->screenshot_hide_interface);
+			ImGui::Checkbox("Show screenshot", &window_data->screenshot_show);
+		}
+
 		ImGui::End();
 
 		glSetEnabled(GL_DEPTH_TEST, depth_test_enabled);
@@ -325,6 +301,37 @@ void DrawInterface(GLFWwindow* window)
 
 //-----------------------------------
 
+void DoControl(GLFWwindow* window)
+{
+	glfwPollEvents();
+
+	WindowData* window_data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+	if (!window_data)
+		return;
+
+	glm::vec3 movement(0);
+	#define _move(key, coordinate, direction) \
+	if (glfwGetKey(window, GLFW_KEY_##key) == GLFW_PRESS) movement.##coordinate direction##= 1;
+
+	_move(D,          x, +);
+	_move(A,          x, -);
+	_move(SPACE,      y, +);
+	_move(LEFT_SHIFT, y, -);
+	_move(W,          z, +);
+	_move(S,          z, -);
+
+	#undef _move
+
+	float speed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? .01f: .005f;
+	window_data->camera->addVelocity(movement * speed);
+	window_data->camera->update();
+
+	if (window_data->should_save_screenshot)
+		OnSaveScreenshot(window), window_data->should_save_screenshot = false;
+}
+
+//-----------------------------------
+
 void GLFWErrorCallback(int error, const char* description)
 {
 	printf("GLFW Error: %s\n", description);
@@ -332,6 +339,9 @@ void GLFWErrorCallback(int error, const char* description)
 
 void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	if (action != GLFW_PRESS)
+		return;
+
 	WindowData* window_data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 	if (!window_data)
 		return;
@@ -339,105 +349,26 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 	switch (key)
 	{
 		case GLFW_KEY_ESCAPE:
-		{
-			if (action == GLFW_PRESS)
-			{
-				if (window_data->interface_visible) SetInterfaceVisible(window, false);
-				else glfwSetWindowShouldClose(window, true);
-			}
+			if (window_data->interface_visible) SetInterfaceVisible(window, false);
+			else glfwSetWindowShouldClose(window, true);
 
 			break;
-		}
 
 		case GLFW_KEY_R:
-		{
-			if (action == GLFW_PRESS)
-				window_data->camera->reset();
-
+			window_data->camera->reset();
 			break;
-		}
 
 		case GLFW_KEY_X:
-		{
-			if (action == GLFW_PRESS)
-			{
-				GLint current_polygon_mode[2] = {};
-
-				glGetIntegerv(GL_POLYGON_MODE, current_polygon_mode);
-				switch (*current_polygon_mode)
-				{
-					case GL_FILL:
-						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-						break;
-
-					case GL_LINE:
-						glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-						break;
-
-					case GL_POINT:
-						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-						break;
-				}
-
-				glcheck;
-			}
-
+			OnToggleRenderMode(window);
 			break;
-		}
 
 		case GLFW_KEY_F1:
-		{
-			if (action == GLFW_PRESS)
-				SetInterfaceVisible(window, !window_data->interface_visible);
-
+			SetInterfaceVisible(window, !window_data->interface_visible);
 			break;
-		}
 
 		case GLFW_KEY_F2:
-		{
-			if (action == GLFW_PRESS)
-			{
-				const std::filesystem::path capture_directory("./captures");
-				if (!std::filesystem::exists(capture_directory))
-				{
-					printf("Creating directory %s\n", capture_directory.string().c_str());
-					std::filesystem::create_directory(capture_directory);
-				}
-
-				else if (!std::filesystem::is_directory(capture_directory))
-				{
-					printf("Can't save image: '%s' exists, but it is not directory\n", capture_directory.string().c_str());
-					return;
-				}
-
-				std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-				char filename[BUFFSIZE] = "";
-				strftime(filename, BUFFSIZE, "%d-%m-%Y_%H-%M-%S.bmp", std::localtime(&time));
-
-				std::filesystem::path path = capture_directory/filename;
-
-				GLint dims[4] = {0};
-				glGetIntegerv(GL_VIEWPORT, dims);
-				glm::uvec2 framesize(dims[2], dims[3]);
-
-				uint8_t* data = new uint8_t[3*framesize.x*framesize.y];
-				glReadPixels(0, 0, framesize.x, framesize.y, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-				// Flipping image vertically
-				for (size_t y = 0; y < framesize.y/2; y++)
-					for (size_t x = 0; x < framesize.x*3; x++)
-						std::swap(*(data+framesize.x*y*3+x), *(data+framesize.x*(framesize.y-y-1)*3+x));
-
-				if (SOIL_save_image(path.string().c_str(), SOIL_SAVE_TYPE_BMP, framesize.x, framesize.y, 3, data))
-				{
-					system((std::string("start") + path.string()).c_str());
-					printf("Capture save as '%s'\n", path.string().c_str());
-				}
-				else printf("Failed to save capture\n");
-
-				delete[] data;
-			}
-		}
+			OnSaveScreenshot(window);
+			break;
 	}
 }
 
@@ -454,6 +385,97 @@ void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	// ...
+}
+
+//-----------------------------------
+
+void OnToggleRenderMode(GLFWwindow* window)
+{
+	GLint current_polygon_mode[2] = {};
+
+	glGetIntegerv(GL_POLYGON_MODE, current_polygon_mode);
+	switch (*current_polygon_mode)
+	{
+		case GL_FILL:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			break;
+
+		case GL_LINE:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			break;
+
+		case GL_POINT:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			break;
+	}
+
+	glcheck;
+}
+
+//-----------------------------------
+
+void OnSaveScreenshot(GLFWwindow* window)
+{
+	WindowData* window_data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+	if (!window_data)
+		return;
+
+	const std::filesystem::path capture_directory("./captures");
+	if (!std::filesystem::exists(capture_directory))
+	{
+		printf("Creating directory %s\n", capture_directory.string().c_str());
+		std::filesystem::create_directory(capture_directory);
+	}
+
+	else if (!std::filesystem::is_directory(capture_directory))
+	{
+		printf("Can't save image: '%s' exists, but it is not directory\n", capture_directory.string().c_str());
+		return;
+	}
+
+	std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	char filename[BUFFSIZE] = "";
+	strftime(filename, BUFFSIZE, "%d-%m-%Y_%H-%M-%S.bmp", std::localtime(&time));
+
+	std::filesystem::path path = capture_directory/filename;
+
+	GLint dims[4] = {0};
+	glGetIntegerv(GL_VIEWPORT, dims);
+	glm::uvec2 framesize(dims[2], dims[3]);
+
+	// Hide GUI and rerender frame if interface was active
+	bool was_interface_visible = window_data->interface_visible;
+	if (was_interface_visible && window_data->screenshot_hide_interface)
+	{
+		SetInterfaceVisible(window, false);
+		DoRender(window);
+	}
+
+	uint8_t* data = new uint8_t[3*framesize.x*framesize.y];
+	glReadPixels(0, 0, framesize.x, framesize.y, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+	if (was_interface_visible && window_data->screenshot_hide_interface) 
+		SetInterfaceVisible(window, true);
+
+	// Flipping image vertically
+	for (size_t y = 0; y < framesize.y/2; y++)
+		for (size_t x = 0; x < framesize.x*3; x++)
+			std::swap(*(data+framesize.x*y*3+x), *(data+framesize.x*(framesize.y-y-1)*3+x));
+
+	if (SOIL_save_image(path.string().c_str(), SOIL_SAVE_TYPE_BMP, framesize.x, framesize.y, 3, data))
+	{
+		if (window_data->screenshot_show)
+		{
+			char command[BUFFSIZE] = "";
+			sprintf_s(command, "start %s", path.string().c_str());
+			system(command);
+		}
+
+		printf("Capture save as '%s'\n", path.string().c_str());
+	}
+	else printf("Failed to save capture\n");
+
+	delete[] data;
 }
 
 //-----------------------------------

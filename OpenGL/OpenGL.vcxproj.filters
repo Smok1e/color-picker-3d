@@ -57,10 +57,10 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpaceSphere.cpp">
+    <ClCompile Include="Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
+    <ClCompile Include="Cube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,10 +92,10 @@
     <ClInclude Include="Texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SpaceSphere.hpp">
+    <ClInclude Include="Light.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Light.hpp">
+    <ClInclude Include="Cube.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

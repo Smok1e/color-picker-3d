@@ -1,6 +1,8 @@
+#include <fstream>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "Camera.hpp"
 #include "Utils.hpp"
-#include <glm/gtc/matrix_transform.hpp>
 
 //-----------------------------------
 
@@ -141,6 +143,40 @@ void Camera::reset()
 
 	updateAxes();
 	updateView();
+}
+
+//-----------------------------------
+
+bool Camera::saveToFile(const std::filesystem::path& filename) const
+{
+	std::ofstream stream;
+	stream.open(filename, std::ios::binary);
+	if (!stream)
+	{
+		printf("Failed to open file '%s'\n", filename.string().c_str());
+		return false;
+	}
+
+	stream.write(reinterpret_cast<const char*>(this), sizeof Camera);
+	stream.close();
+
+	return true;
+}
+
+bool Camera::loadFromFile(const std::filesystem::path& filename)
+{
+	std::ifstream stream;
+	stream.open(filename, std::ios::binary);
+	if (!stream)
+	{
+		printf("Failed to open file '%s'\n", filename.string().c_str());
+		return false;
+	}
+
+	stream.read(reinterpret_cast<char*>(this), sizeof Camera);
+	stream.close();
+
+	return true;
 }
 
 //-----------------------------------

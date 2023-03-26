@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 //---------------------------------
 
@@ -23,10 +23,10 @@ in vec3 FragNormal;
 uniform vec3 viewPos;
 
 uniform sampler2D shapeTexture;
+uniform sampler2D shapeNormalMap;
 uniform bool      useTexture;
+uniform bool      useNormalMap;
 uniform bool      useLightning;
-uniform bool      useBloom;
-uniform float     time;
 
 uniform Light lights[LIGHTS_MAX];
 
@@ -34,40 +34,31 @@ out vec4 color;
 
 //---------------------------------
 
-float rand(float co);
-vec3 CalculateLightning(Light light, vec3 normal, vec3 viewpos, vec3 fragpos);
+vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos);
 
 //---------------------------------
 
 void main()
 {
     vec4 fragColor = useTexture? texture(shapeTexture, FragTexCoord): FragColor;
+    vec3 fragNormal = useNormalMap? 2.0*texture(shapeNormalMap, FragTexCoord).xyz - 1.0: FragNormal;
 
     if (useLightning)
     {
         vec3 result = vec3(0, 0, 0);
-        vec3 normal = normalize(FragNormal);
+        vec3 normal = normalize(fragNormal);
         for (int i = 0; i < LIGHTS_MAX; i++)
-            result += CalculateLightning(lights[i], normal, viewPos, FragPos);
+            result += CalculatePointLight(lights[i], normal, viewPos, FragPos);
 
         color = fragColor*vec4(result, 1);
     }
+
     else color = fragColor;
-
-    if (useBloom) 
-        color = vec4(color.xyz*rand(time*FragPos.x*FragPos.y*0.001), 1);
 }
 
 //---------------------------------
 
-float rand(float co)
-{ 
-    return fract(sin(co*(91.3458)) * 47453.5453)*1.2;
-}
-
-//---------------------------------
-
-vec3 CalculateLightning(Light light, vec3 normal, vec3 viewpos, vec3 fragpos)
+vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos)
 {
     // Ambient lightning
     vec3 ambient = light.color.xyz*light.ambient;
@@ -80,7 +71,7 @@ vec3 CalculateLightning(Light light, vec3 normal, vec3 viewpos, vec3 fragpos)
     // Specular lightning
     vec3 viewDir = normalize(viewpos-light.position);
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), .0f), 64);
+    float spec = pow(max(dot(viewDir, reflectDir), .0f), 32);
     vec3 specular = light.color.xyz*light.specular*spec;
 
     return ambient+diffuse+specular;

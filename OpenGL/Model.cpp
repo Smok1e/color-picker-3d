@@ -134,9 +134,9 @@ bool Model::loadFromMemory(const std::string& data)
 					}
 
 					// Normal index
-					else if (component_index == 1)
+					else if (component_index == 11)
 					{
-						if (!index)
+						if (!index || (index-1) >= normal_data.size())
 							error("Vertex normal index is out of range. Expected from 1 to %zu, got %lu\n", normal_data.size(), index);
 
 						if ((index-1) >= normal_data.size())
@@ -174,6 +174,7 @@ bool Model::loadFromMemory(const std::string& data)
 	#undef error;
 
 	m_vertices = vertices;
+	m_vertex_count = vertices.size();
 	updateVertexData();
 
 	return true;
@@ -214,11 +215,15 @@ void Model::updateVertexData()
 
 	glGenBuffers(1, &m_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof Vertex, m_vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof Vertex * m_vertices.size(), m_vertices.data(), GL_STATIC_DRAW);
+
 	glGenVertexArrays(1, &m_vertex_array);
+	glBindVertexArray(m_vertex_array);
 	Vertex::InitAttributes();
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	m_vertex_count = m_vertices.size();
 }
 
 //-----------------------------------
@@ -227,7 +232,7 @@ void Model::draw(Shader* shader /*= nullptr*/) const
 {
 	Primitive::draw(shader);
 	glBindVertexArray(m_vertex_array);
-	glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+	glDrawArrays(GL_TRIANGLES, 0, m_vertex_count);
 	glBindVertexArray(0);
 }
 

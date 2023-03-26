@@ -15,6 +15,7 @@ Primitive::Primitive():
 	m_transform(glm::identity<glm::mat4>()),
 	m_color(),
 	m_texture(nullptr),
+	m_normalmap(nullptr),
 	m_use_lightning(true)
 {}
 
@@ -83,6 +84,16 @@ Texture* Primitive::getTexture() const
 	return m_texture;
 }
 
+void Primitive::setNormalMap(Texture* normalmap)
+{
+	m_normalmap = normalmap;
+}
+
+Texture* Primitive::getNormalMap() const
+{
+	return m_normalmap;
+}
+
 void Primitive::setLightningEnabled(bool enable)
 {
 	m_use_lightning = enable;
@@ -117,14 +128,13 @@ void Primitive::bindShader(Shader& shader) const
 	shader["shapeColor"    ] = m_color;
 	shader["shapeScale"    ] = m_scale;
 	shader["shapeTransform"] = m_transform;
-	shader["useTexture"    ] = m_texture;
+	shader["useTexture"    ] = m_texture   != nullptr;
+	shader["useNormalMap"  ] = m_normalmap != nullptr;
 	shader["useLightning"  ] = m_use_lightning;
-	shader["useBloom"      ] = false;
-
-	//if (m_texture) shader["shapeTexture"] = *m_texture;
-	if (m_texture) m_texture->bind();
 
 	shader.use();
+	if (m_texture  ) shader.setUniform("shapeTexture",   *m_texture  );
+	if (m_normalmap) shader.setUniform("shapeNormalMap", *m_normalmap);
 }
 
 //---------------------------------

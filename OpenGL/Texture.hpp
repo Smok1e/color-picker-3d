@@ -10,6 +10,11 @@
 class Texture
 {
 public:
+	enum class ID {
+		BaseColor,
+		Normal
+	};
+
 	Texture();
 	~Texture();
 
@@ -29,14 +34,21 @@ public:
 	// Binds texture
 	void bind() const;
 
+	// Sets texture's id as active
+	void setActive() const;
+
 	// Setting OpenGL texture instance parameters
 	void setParameter(GLenum name, GLfloat parameter);
 	void setParameter(GLenum name, const GLfloat* parameters);
 	void setParameter(GLenum name, GLint parameter);
 	void setParameter(GLenum name, const GLint* parameters);
 
+	void setID(ID usage);
+	ID getID() const;
+
 protected:
 	GLuint m_texture_handle;
+	ID m_id;
 
 };
 

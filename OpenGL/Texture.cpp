@@ -4,7 +4,8 @@
 //---------------------------------
 
 Texture::Texture():
-	m_texture_handle(0)
+	m_texture_handle(0),
+	m_id(ID::BaseColor)
 {}
 
 Texture::~Texture()
@@ -90,6 +91,11 @@ void Texture::bind() const
 	glBindTexture(GL_TEXTURE_2D, m_texture_handle);
 }
 
+void Texture::setActive() const
+{
+	glActiveTexture(GL_TEXTURE0 + static_cast<int>(m_id));
+}
+
 //---------------------------------
 
 void Texture::setParameter(GLenum name, GLfloat parameter)
@@ -110,6 +116,18 @@ void Texture::setParameter(GLenum name, GLint parameter)
 void Texture::setParameter(GLenum name, const GLint* parameters)
 {
 	glTextureParameteriv(m_texture_handle, name, parameters);
+}
+
+//---------------------------------
+
+void Texture::setID(Texture::ID usage)
+{
+	m_id = usage;
+}
+
+Texture::ID Texture::getID() const
+{
+	return m_id;
 }
 
 //---------------------------------

@@ -130,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -137,7 +138,6 @@
     <ClCompile Include="Plane.hpp" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="PrimitiveBuffer.cpp" />
-    <ClCompile Include="SpaceSphere.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -147,11 +147,11 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Color.hpp" />
+    <ClInclude Include="Cube.hpp" />
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />
-    <ClInclude Include="SpaceSphere.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Shader.hpp" />

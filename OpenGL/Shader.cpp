@@ -264,13 +264,10 @@ bool Shader::setUniform(const char* name, bool value)
 
 bool Shader::setUniform(const char* name, const Texture& texture)
 {
-	GLint location = getUniformLocation(name);
-	if (location == -1)
+	if (!setUniform(name, static_cast<int>(texture.getID())))
 		return false;
 
-	// Anal magic
-	glProgramUniform1i(m_program_handle, location, texture.getNativeHandle());
-	glActiveTexture(GL_TEXTURE0 + texture.getNativeHandle());
+	texture.setActive();
 	texture.bind();
 }
 

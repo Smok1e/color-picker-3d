@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <filesystem>
 
 //-----------------------------------
 
@@ -31,6 +32,9 @@ public:
 
 	void update();
 	void reset();
+
+	bool saveToFile(const std::filesystem::path& filename) const;
+	bool loadFromFile(const std::filesystem::path& filename);
 
 protected:
 	void updateView();

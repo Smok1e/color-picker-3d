@@ -30,6 +30,9 @@ public:
 	virtual void setTexture(Texture* texture);
 	virtual Texture* getTexture() const;
 
+	virtual void setNormalMap(Texture* normalmap);
+	virtual Texture* getNormalMap() const;
+
 	virtual void setLightningEnabled(bool enable);
 	virtual bool getLightningEnabled() const;
 
@@ -44,6 +47,7 @@ protected:
 	size_t m_vertex_count;
 
 	Texture* m_texture;
+	Texture* m_normalmap;
 
 	glm::vec3 m_position;
 	glm::vec3 m_scale;
