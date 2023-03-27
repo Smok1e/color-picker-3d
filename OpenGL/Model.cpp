@@ -4,6 +4,8 @@
 #include "Utils.hpp"
 #include <Windows.h>
 
+#pragma warning(disable: 4267)
+
 //-----------------------------------
 
 const char* LINE_DELIMITERS  = "\n\r";
@@ -37,14 +39,14 @@ bool Model::loadFromMemory(const std::string& data)
 	const char* line_end = StrPBRK(line_begin, LINE_DELIMITERS);
 	for (size_t line_number = 0; line_end; line_number++)
 	{
-		unsigned line_len = line_end-line_begin;
+		unsigned line_len = static_cast<unsigned>(line_end-line_begin);
 
 		const char* header_begin = line_begin;
 		const char* header_end = StrPBRK2(header_begin, DATA_DELIMITERS, LINE_DELIMITERS, line_end);
 		if (!header_end)
 			error("Expected whitespace delimiter next to header\n");
 
-		unsigned header_len = header_end-header_begin;
+		unsigned header_len = static_cast<unsigned>(header_end-header_begin);
 		if (!header_len)
 			continue;
 
@@ -171,7 +173,7 @@ bool Model::loadFromMemory(const std::string& data)
 		line_end = StrPBRK(line_begin, LINE_DELIMITERS);
 	}
 
-	#undef error;
+	#undef error
 
 	m_vertices = vertices;
 	m_vertex_count = vertices.size();

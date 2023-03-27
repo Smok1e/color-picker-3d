@@ -21,8 +21,8 @@ public:
 	virtual void setScale(const glm::vec3& scale);
 	virtual glm::vec3 getScale() const;
 
-	virtual void setRotation(const glm::vec2& rotation);
-	virtual glm::vec2 getRotation() const;
+	virtual void setDirection(const glm::vec3& direction);
+	virtual glm::vec2 getDirection() const;
 
 	virtual void setColor(const Color& color);
 	virtual Color getColor() const;
@@ -48,11 +48,10 @@ protected:
 
 	Texture* m_texture;
 	Texture* m_normalmap;
-	Texture* m_bumpmap;
 
 	glm::vec3 m_position;
 	glm::vec3 m_scale;
-	glm::vec2 m_rotation;
+	glm::vec3 m_direction;
 	glm::mat4 m_transform;
 	Color m_color;
 	bool m_use_lightning;

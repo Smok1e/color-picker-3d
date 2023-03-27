@@ -43,7 +43,7 @@ void Plane::updateVertexData()
 	glm::vec3 c( m_size.x/2, 0, -m_size.y/2);
 	glm::vec3 d( m_size.x/2, 0,  m_size.y/2);
 
-	glm::vec3 normal = glm::cross(b-a, c-b);
+	glm::vec3 normal = glm::normalize(glm::cross(b-a, c-a));
 
 	Vertex vertices[4] = {
 		Vertex(a, glm::vec2(0, 0), normal),

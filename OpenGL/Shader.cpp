@@ -269,6 +269,8 @@ bool Shader::setUniform(const char* name, const Texture& texture)
 
 	texture.setActive();
 	texture.bind();
+
+	return true;
 }
 
 //---------------------------------

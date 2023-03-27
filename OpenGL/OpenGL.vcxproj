@@ -130,7 +130,10 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Cone.cpp" />
     <ClCompile Include="Cube.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="DebugVisualization.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -147,8 +150,11 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Color.hpp" />
+    <ClInclude Include="Cone.hpp" />
     <ClInclude Include="Cube.hpp" />
+    <ClInclude Include="DebugVisualization.hpp" />
     <ClInclude Include="Light.hpp" />
+    <ClInclude Include="Cylinder.hpp" />
     <ClInclude Include="Model.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />

@@ -5,9 +5,9 @@
 Light::Light():
 	m_position(),
 	m_color(),
-	m_ambient_strength (0.2),
-	m_diffuse_strength (0.8),
-	m_specular_strength(0.5)
+	m_ambient_strength (0.2f),
+	m_diffuse_strength (0.8f),
+	m_specular_strength(0.5f)
 {}
 
 //---------------------------------

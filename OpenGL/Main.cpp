@@ -17,12 +17,17 @@
 #include "Shader.hpp"
 #include "Sphere.hpp"
 #include "Cube.hpp"
+#include "Cylinder.hpp"
 #include "Plane.hpp"
+#include "Cone.hpp"
 #include "Model.hpp"
 #include "Utils.hpp"
 #include "Camera.hpp"
 #include "PrimitiveBuffer.hpp"
 #include "Light.hpp"
+#include "DebugVisualization.hpp"
+
+#pragma warning(disable: 4244)
 
 //-----------------------------------
 
@@ -40,6 +45,8 @@ struct WindowData
 	bool should_save_screenshot;
 	bool screenshot_hide_interface;
 	bool screenshot_show;
+	Primitive* obj1;
+	Primitive* obj2;
 };
 
 //-----------------------------------
@@ -135,7 +142,6 @@ int main()
 		return 0;
 
 	Camera camera;
-	camera.reset();
 
 	auto projection = glm::perspective(glm::radians(45.f), aspect_ratio, .1f, 1000.f);
 	PrimitiveBuffer scene;
@@ -159,29 +165,35 @@ int main()
 	normalmap.loadFromFile("Resources/Textures/rock/normal.png");
 	normalmap.setID(Texture::ID::Normal);
 
-	auto plane = scene += new Plane;
-	plane->setTexture(&texture);
-	plane->setNormalMap(&normalmap);
-	plane->setRotation(glm::vec2(M_PI/2, 0.f));
+	auto object = scene += new Plane;
+	object->setTexture(&texture);
+	//object->setNormalMap(&normalmap);
 
-	auto light1 = scene += new Light;
-	light1->setAmbientStrength(0);
-	light1->setColor("#FFF7C9");
-	light1->setPosition(glm::vec3(-1, 0, 1));
+	auto light = scene += new Light;
+	light->setColor("#FFF7C9");
+	light->setPosition(glm::vec3(0, 0, 1));
 
-	auto light_shape1 = scene += new Sphere;
-	light_shape1->setRadius(.1);
-	light_shape1->setColor(light1->getColor());
-	light_shape1->setPosition(light1->getPosition());
-	light_shape1->setPointCount(64, 64);
-	light_shape1->setLightningEnabled(false);
+	auto light_shape = scene += new Sphere;
+	light_shape->setRadius(.1f);
+	light_shape->setColor(light->getColor());
+	light_shape->setPosition(light->getPosition());
+	light_shape->setPointCount(64, 64);
+	light_shape->setLightningEnabled(false);
+
+	window_data.obj1 = light_shape;
+	window_data.obj2 = object;
 
 	while (!glfwWindowShouldClose(window))
 	{
 		DoControl(window);
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) plane->setRotation(plane->getRotation()+glm::vec2(0.01, 0));
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) plane->setRotation(plane->getRotation()-glm::vec2(0.01, 0));
+		//if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object->setDirection(object->getDirection()+glm::vec2(0.01, 0));
+		//if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object->setDirection(object->getDirection()-glm::vec2(0.01, 0));
+
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) object->setPosition(object->getPosition()+glm::vec3(0.01, 0, 0));
+		if (glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS) object->setPosition(object->getPosition()-glm::vec3(0.01, 0, 0));
+		if (glfwGetKey(window, GLFW_KEY_UP   ) == GLFW_PRESS) object->setPosition(object->getPosition()+glm::vec3(0, 0.01, 0));
+		if (glfwGetKey(window, GLFW_KEY_DOWN ) == GLFW_PRESS) object->setPosition(object->getPosition()-glm::vec3(0, 0.01, 0));
 
 		DoRender(window);
 	}
@@ -209,7 +221,7 @@ void DoRender(GLFWwindow* window)
 	ImGui::NewFrame();
 	DrawInterface(window);	
 
-	glClearColor(Color(.05, .05, .05));
+	glClearColor(Color(.05f, .05f, .05f));
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	shader["projection"] = *window_data->projection;
@@ -254,6 +266,9 @@ void DrawInterface(GLFWwindow* window)
 
 		if (ImGui::CollapsingHeader("Camera"))
 		{
+			glm::vec3 pos = window_data->camera->getPosition();
+			ImGui::Text("Position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+
 			if (ImGui::Button("Save camera state")) window_data->camera->saveToFile  (camera_state_filename);
 			if (ImGui::Button("Load camera state")) window_data->camera->loadFromFile(camera_state_filename);
 			if (ImGui::Button("Save screenshot")) window_data->should_save_screenshot = true;

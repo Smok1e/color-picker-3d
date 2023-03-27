@@ -14,7 +14,7 @@ public:
 	virtual void setRadius(float radius);
 	virtual float getRadius() const;
 
-	virtual void setPointCount(size_t latitude, size_t longitude);
+	virtual void setPointCount(size_t latitude, size_t longitude = 0);
 	virtual size_t getLatitudePointCount() const;
 	virtual size_t getLongitudePointCount() const;
 

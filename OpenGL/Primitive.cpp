@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES
+
+#include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Primitive.hpp"
@@ -9,9 +12,9 @@ Primitive::Primitive():
 	m_vertex_buffer(0),
 	m_vertex_array(0),
 	m_vertex_count(0),
-	m_position(),
+	m_position(0),
 	m_scale(glm::vec3(1, 1, 1)),
-	m_rotation(),
+	m_direction(0),
 	m_transform(glm::identity<glm::mat4>()),
 	m_color(),
 	m_texture(nullptr),
@@ -22,6 +25,7 @@ Primitive::Primitive():
 Primitive::~Primitive()
 {
 	cleanup();
+	updateTransform();
 }
 
 //---------------------------------
@@ -53,15 +57,15 @@ glm::vec3 Primitive::getScale() const
 	return m_scale;
 }
 
-void Primitive::setRotation(const glm::vec2& rotation)
+void Primitive::setDirection(const glm::vec3& direction)
 {
-	if (rotation != m_rotation)
-		m_rotation = rotation, updateTransform();
+	if (m_direction != direction)
+		m_direction = direction, updateTransform();
 }
 
-glm::vec2 Primitive::getRotation() const
+glm::vec2 Primitive::getDirection() const
 {
-	return m_rotation;
+	return m_direction;
 }
 
 void Primitive::setColor(const Color& color)
@@ -108,8 +112,7 @@ bool Primitive::getLightningEnabled() const
 
 void Primitive::updateTransform()
 {
-	m_transform = glm::rotate(glm::identity<glm::mat4>(), m_rotation.x, glm::vec3(1, 0, 0));
-	m_transform = glm::rotate(m_transform, m_rotation.y, glm::vec3(0, 1, 0));
+	m_transform = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), m_direction+glm::vec3(0, 1, 0));
 }
 
 //---------------------------------

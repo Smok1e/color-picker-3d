@@ -8,6 +8,8 @@
 //---------------------------------
 
 #pragma pack(push, 1)
+#pragma warning(disable: 4267)
+
 class Vertex
 {
 public:
@@ -37,6 +39,7 @@ public:
 		return position[index];
 	}
 };
+
 #pragma pack(pop)
 
 //---------------------------------

@@ -7,14 +7,15 @@
 //-----------------------------------
 
 Camera::Camera():
-	m_position(),
-	m_velocity(),
-	m_rotation(),
+	m_position(0),
+	m_velocity(0),
+	m_rotation(0),
 	m_axes(),
 	m_view(),
 	m_velocity_dampling(.9f)
 {
 	reset();
+	updateView();
 }
 
 //-----------------------------------
@@ -68,7 +69,7 @@ glm::vec3 Camera::getVelocity() const
 
 //-----------------------------------
 
-void Camera::setRotation(const glm::vec2& rotation)
+void Camera::setDirection(const glm::vec2& rotation)
 {
 	if (rotation != m_rotation)
 	{
@@ -80,10 +81,10 @@ void Camera::setRotation(const glm::vec2& rotation)
 
 void Camera::addRotation(const glm::vec2& rotation)
 {
-	setRotation(m_rotation+rotation);
+	setDirection(m_rotation+rotation);
 }
 
-glm::vec2 Camera::getRotation() const
+glm::vec2 Camera::getDirection() const
 {
 	return m_rotation;
 }

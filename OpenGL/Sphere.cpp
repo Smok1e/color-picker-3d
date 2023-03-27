@@ -42,12 +42,12 @@ float Sphere::getRadius() const
 	return m_radius;
 }
 
-void Sphere::setPointCount(size_t latitude, size_t longitude)
+void Sphere::setPointCount(size_t latitude, size_t longitude /*= 0*/)
 {
 	if (latitude != m_latitude_points || longitude != m_longitude_points)
 	{
 		m_latitude_points = latitude;
-		m_longitude_points = longitude;
+		m_longitude_points = longitude? longitude: latitude;
 		updateVertexData();
 	}
 }

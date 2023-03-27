@@ -69,7 +69,7 @@ Color Color::FromStringHexRGB(const char* hexstring)
 		return Color::Black;
 
 	uint8_t bytes[4] = {0};
-	*reinterpret_cast<uint32_t*>(bytes) = strtoull(hexstring, nullptr, 16);
+	*reinterpret_cast<uint32_t*>(bytes) = strtoul(hexstring, nullptr, 16);
 
 	if (len == 6) return Color::FromBytesRGB(bytes[2], bytes[1], bytes[0]          );
 	else          return Color::FromBytesRGB(bytes[3], bytes[2], bytes[1], bytes[0]);
@@ -85,10 +85,10 @@ Color Color::Random()
 char* Color::toStringHexRGB(char* buffer, size_t limit /*= 0*/) const
 {
 	uint8_t bytes[4] = {
-		255*r,
-		255*g,
-		255*b,
-		255*a,
+		static_cast<uint8_t>(255*r),
+		static_cast<uint8_t>(255*g),
+		static_cast<uint8_t>(255*b),
+		static_cast<uint8_t>(255*a),
 	};
 
 	snprintf(buffer, limit, "%02X%02X%02X%02X", bytes[0], bytes[1], bytes[2], bytes[3]);
