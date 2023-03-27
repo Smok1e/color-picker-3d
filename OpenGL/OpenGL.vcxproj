@@ -138,7 +138,6 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Plane.cpp" />
-    <ClCompile Include="Plane.hpp" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="PrimitiveBuffer.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -156,6 +155,7 @@
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Cylinder.hpp" />
     <ClInclude Include="Model.hpp" />
+    <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />
     <ClInclude Include="Texture.hpp" />

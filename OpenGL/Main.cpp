@@ -45,6 +45,10 @@ struct WindowData
 	bool should_save_screenshot;
 	bool screenshot_hide_interface;
 	bool screenshot_show;
+	float camera_speed;
+	float fov;
+	float fov_vel;
+	float aspect_ratio;
 	Primitive* obj1;
 	Primitive* obj2;
 };
@@ -59,6 +63,7 @@ void GLFWErrorCallback(int error, const char* description);
 void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void GLFWCursorPosCallback(GLFWwindow* window, double x, double y);
 void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+void GLFWMouseWheelCallback(GLFWwindow* window, double x, double y);
 
 void OnToggleRenderMode(GLFWwindow* window);
 void OnSaveScreenshot(GLFWwindow* window);
@@ -85,9 +90,6 @@ int main()
 	glm::vec2 monitor_size(videomode->width, videomode->height);
 	glm::vec2 window_size = static_cast<glm::vec2>(monitor_size) * (FullscreenMode ? 1.f : .8f);
 
-	float aspect_ratio = window_size.x / window_size.y;
-	constexpr float fov = glm::radians(45.f);
-
 	// Initializing window
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -104,6 +106,7 @@ int main()
 	glfwSetKeyCallback        (window, GLFWKeyCallback        );
 	glfwSetCursorPosCallback  (window, GLFWCursorPosCallback  );
 	glfwSetMouseButtonCallback(window, GLFWMouseButtonCallback);
+	glfwSetScrollCallback     (window, GLFWMouseWheelCallback );
 	glfwFocusWindow(window);
 	glfwSetWindowPos(window, monitor_size.x / 2 - window_size.x / 2, monitor_size.y / 2 - window_size.y / 2);
 
@@ -142,9 +145,8 @@ int main()
 		return 0;
 
 	Camera camera;
-
-	auto projection = glm::perspective(glm::radians(45.f), aspect_ratio, .1f, 1000.f);
 	PrimitiveBuffer scene;
+	glm::mat4 projection;
 
 	WindowData window_data = {};
 	window_data.camera = &camera;
@@ -155,6 +157,10 @@ int main()
 	window_data.should_save_screenshot = false;
 	window_data.screenshot_hide_interface = true;
 	window_data.screenshot_show = true;
+	window_data.camera_speed = 1.f;
+	window_data.fov = 45.f;
+	window_data.fov_vel = 0.f;
+	window_data.aspect_ratio = window_size.x / window_size.y;
 	glfwSetWindowUserPointer(window, &window_data);
 
 	Texture texture;
@@ -183,12 +189,14 @@ int main()
 	window_data.obj1 = light_shape;
 	window_data.obj2 = object;
 
+	double object_rotation_angle = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		DoControl(window);
 
-		//if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object->setDirection(object->getDirection()+glm::vec2(0.01, 0));
-		//if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object->setDirection(object->getDirection()-glm::vec2(0.01, 0));
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)  object_rotation_angle += 0.01;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)  object_rotation_angle -= 0.01;
+		object->setDirection(glm::vec3(0, sin(object_rotation_angle), cos(object_rotation_angle)));
 
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) object->setPosition(object->getPosition()+glm::vec3(0.01, 0, 0));
 		if (glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS) object->setPosition(object->getPosition()-glm::vec3(0.01, 0, 0));
@@ -269,6 +277,8 @@ void DrawInterface(GLFWwindow* window)
 			glm::vec3 pos = window_data->camera->getPosition();
 			ImGui::Text("Position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
 
+			ImGui::SliderFloat("Camera speed", &window_data->camera_speed, .01f, 5.f, "%.2f");
+
 			if (ImGui::Button("Save camera state")) window_data->camera->saveToFile  (camera_state_filename);
 			if (ImGui::Button("Load camera state")) window_data->camera->loadFromFile(camera_state_filename);
 			if (ImGui::Button("Save screenshot")) window_data->should_save_screenshot = true;
@@ -310,8 +320,14 @@ void DoControl(GLFWwindow* window)
 	#undef _move
 
 	float speed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? .01f: .005f;
-	window_data->camera->addVelocity(movement * speed);
+	window_data->camera->addVelocity(movement * speed * window_data->camera_speed);
 	window_data->camera->update();
+
+	window_data->fov = std::clamp(window_data->fov + (window_data->fov_vel*=.9f), 1.f, 100.f);
+
+	static float last_fov = -1;
+	if (window_data->fov != last_fov)
+		*window_data->projection = glm::perspective(glm::radians(window_data->fov), window_data->aspect_ratio, .1f, 1000.f);
 
 	if (window_data->should_save_screenshot)
 		OnSaveScreenshot(window), window_data->should_save_screenshot = false;
@@ -343,6 +359,8 @@ void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int 
 
 		case GLFW_KEY_R:
 			window_data->camera->reset();
+			window_data->fov = 45.f;
+			window_data->fov_vel = 0;
 			break;
 
 		case GLFW_KEY_X:
@@ -372,6 +390,15 @@ void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	// ...
+}
+
+void GLFWMouseWheelCallback(GLFWwindow* window, double x, double y)
+{
+	WindowData* window_data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+	if (!window_data)
+		return;
+
+	window_data->fov_vel -= 2*y;
 }
 
 //-----------------------------------

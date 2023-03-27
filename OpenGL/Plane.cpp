@@ -1,4 +1,5 @@
 #include "Plane.hpp"
+#include "DebugVisualization.hpp"
 
 //---------------------------------
 
@@ -29,7 +30,12 @@ void Plane::draw(Shader* shader /*= nullptr*/) const
 	Primitive::draw(shader);
     glBindVertexArray(m_vertex_array);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);	
+	glBindVertexArray(0);
+
+	glm::vec3 normal;
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
+	glGetBufferSubData(GL_ARRAY_BUFFER, offsetof(Vertex, normal), sizeof Vertex::normal, &normal);
+	DrawVector(shader, m_position, m_transform*glm::vec4(normal, 1));
 }
 
 //---------------------------------

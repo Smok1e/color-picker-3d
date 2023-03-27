@@ -41,19 +41,19 @@ void Vertex::InitAttributes()
 	glEnableVertexAttribArray(0);
 
 	// UV
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(sizeof Vertex::position));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, texcoord)));
 	glEnableVertexAttribArray(1);
 
 	// Normal
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(sizeof Vertex::position + sizeof Vertex::texcoord));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, normal)));
 	glEnableVertexAttribArray(2);
 
 	// Tangent
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(sizeof Vertex::position + sizeof Vertex::texcoord + sizeof Vertex::normal));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, tangent)));
 	glEnableVertexAttribArray(3);
 
 	// Bitangent
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(sizeof Vertex::position + sizeof Vertex::texcoord + sizeof Vertex::normal + sizeof Vertex::tangent));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, bitangent)));
 	glEnableVertexAttribArray(4);
 }
 

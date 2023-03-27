@@ -6,7 +6,7 @@
 
 void DrawVector(Shader* shader, glm::vec3 position, glm::vec3 vector, Color color /*= Color::Red*/)
 {
-	constexpr const float length    = .4f;
+	constexpr const float length    = .3f;
 	constexpr const float thickness = .002f;
 
 	static Cylinder cylinder;
@@ -29,11 +29,11 @@ void DrawVector(Shader* shader, glm::vec3 position, glm::vec3 vector, Color colo
 	glm::vec3 direction = glm::normalize(vector);
 	cylinder.setColor(color);
 	cylinder.setDirection(direction);
-	cylinder.setPosition(position-direction*length*.5f);
+	cylinder.setPosition(position+direction*length*.5f);
 
 	cone.setColor(color);
-	cone.setDirection(-direction);
-	cone.setPosition(position-direction*length);
+	cone.setDirection(direction);
+	cone.setPosition(position+direction*length);
 
 	cylinder.draw(shader);
 	cone.draw(shader);

@@ -63,7 +63,7 @@ void Primitive::setDirection(const glm::vec3& direction)
 		m_direction = direction, updateTransform();
 }
 
-glm::vec2 Primitive::getDirection() const
+glm::vec3 Primitive::getDirection() const
 {
 	return m_direction;
 }

@@ -22,7 +22,7 @@ public:
 	virtual glm::vec3 getScale() const;
 
 	virtual void setDirection(const glm::vec3& direction);
-	virtual glm::vec2 getDirection() const;
+	virtual glm::vec3 getDirection() const;
 
 	virtual void setColor(const Color& color);
 	virtual Color getColor() const;
