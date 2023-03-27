@@ -98,7 +98,7 @@ void Sphere::updateVertexData()
 		   glm::vec3 position = glm::vec3(x*zr0, y*zr0, z0)*m_radius;
 		   glm::vec3 normal = glm::normalize(position);
 		   glm::vec2 texcoord(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
-		   vertices.push_back(Vertex(position, normal, texcoord));
+		   vertices.push_back(Vertex(position, texcoord, normal));
 
            indices.push_back(index);
 		   index++;
@@ -106,7 +106,7 @@ void Sphere::updateVertexData()
 		   position = glm::vec3(x*zr1, y*zr1, z1)*m_radius;
 		   normal = glm::normalize(position);
 		   texcoord = glm::vec2(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
-		   vertices.push_back(Vertex(position, normal, texcoord));
+		   vertices.push_back(Vertex(position, texcoord, normal));
 
            indices.push_back(index);
 		   index++;

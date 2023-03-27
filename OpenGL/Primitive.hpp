@@ -48,6 +48,7 @@ protected:
 
 	Texture* m_texture;
 	Texture* m_normalmap;
+	Texture* m_bumpmap;
 
 	glm::vec3 m_position;
 	glm::vec3 m_scale;

@@ -46,10 +46,10 @@ void Plane::updateVertexData()
 	glm::vec3 normal = glm::cross(b-a, c-b);
 
 	Vertex vertices[4] = {
-		Vertex(a, normal, glm::vec2(0, 0)),
-		Vertex(b, normal, glm::vec2(0, 1)),
-		Vertex(c, normal, glm::vec2(1, 0)),
-		Vertex(d, normal, glm::vec2(1, 1)),
+		Vertex(a, glm::vec2(0, 0), normal),
+		Vertex(b, glm::vec2(0, 1), normal),
+		Vertex(c, glm::vec2(1, 0), normal),
+		Vertex(d, glm::vec2(1, 1), normal),
 	};
 
 	glGenBuffers(1, &m_vertex_buffer);

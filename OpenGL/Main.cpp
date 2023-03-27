@@ -152,26 +152,17 @@ int main()
 	glfwSetWindowUserPointer(window, &window_data);
 
 	Texture texture;
-	texture.loadFromFile("Resources/Textures/wood/base.png");
+	texture.loadFromFile("Resources/Textures/rock/base.png");
 	texture.setID(Texture::ID::BaseColor);
 
 	Texture normalmap;
-	normalmap.loadFromFile("Resources/Textures/wood/normal.png");
+	normalmap.loadFromFile("Resources/Textures/rock/normal.png");
 	normalmap.setID(Texture::ID::Normal);
 
-	//auto cube = scene += new Cube;
-	//cube->setColor(Color::Red);
-	//cube->setRotation(glm::vec2(0, .2));
-	//cube->setTexture(&texture);
-	//cube->setNormalMap(&normalmap);
-
 	auto plane = scene += new Plane;
-	plane->setColor(Color::White);
-	//plane->setPosition(glm::vec3(0, -cube->getSize().x/2, 0));
-	//plane->setSize(glm::vec2(5, 5));
-	plane->setRotation(glm::vec2(-M_PI/2, 0));
 	plane->setTexture(&texture);
 	plane->setNormalMap(&normalmap);
+	plane->setRotation(glm::vec2(M_PI/2, 0.f));
 
 	auto light1 = scene += new Light;
 	light1->setAmbientStrength(0);
@@ -185,28 +176,9 @@ int main()
 	light_shape1->setPointCount(64, 64);
 	light_shape1->setLightningEnabled(false);
 
-	//auto light2 = scene += new Light;
-	//light2->setAmbientStrength(0);
-	//light2->setColor("#BFE3FF");
-	//light2->setPosition(glm::vec3(1.5, 1, 2));
-	//light2->setDiffuseStrength(0);
-	//light2->setSpecularStrength(0);
-
-	//auto light_shape2 = scene += new Cube;
-	//light_shape2->setSize(glm::vec3(.2));
-	//light_shape2->setColor(light2->getColor());
-	//light_shape2->setPosition(light2->getPosition());
-	//light_shape2->setLightningEnabled(false);
-
-	//auto cameralight = scene += new Light;
-	//cameralight->setAmbientStrength(0);
-	//cameralight->setSpecularStrength(0);
-	//cameralight->setColor(Color::White);
-
 	while (!glfwWindowShouldClose(window))
 	{
 		DoControl(window);
-		//cameralight->setPosition(camera.getPosition());
 
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) plane->setRotation(plane->getRotation()+glm::vec2(0.01, 0));
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) plane->setRotation(plane->getRotation()-glm::vec2(0.01, 0));

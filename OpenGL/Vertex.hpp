@@ -13,13 +13,21 @@ class Vertex
 public:
 	Vertex();
 	Vertex(const Vertex& copy);
-	Vertex(const glm::vec3& position, const glm::vec3& normal = glm::vec3(0, 0, 0), const glm::vec2& texcoord = glm::vec2(0, 0));
+	Vertex(
+		const glm::vec3& position, 
+		const glm::vec2& texcoord  = glm::vec2(0), 
+		const glm::vec3& normal    = glm::vec3(0), 
+		const glm::vec3& tangent   = glm::vec3(0),
+		const glm::vec3& bitangent = glm::vec3(0)
+	);
 
 	static void InitAttributes();
 
 	glm::vec3 position;
-	glm::vec3 normal;
 	glm::vec2 texcoord;
+	glm::vec3 normal;
+	glm::vec3 tangent;
+	glm::vec3 bitangent;
 
 	constexpr float& operator[](size_t index) {
 		return position[index];
