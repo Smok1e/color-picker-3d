@@ -9,9 +9,8 @@
 //---------------------------------
 
 Primitive::Primitive():
-	m_vertex_buffer(0),
+	m_vertex_buffer(),
 	m_vertex_array(0),
-	m_vertex_count(0),
 	m_position(0),
 	m_scale(glm::vec3(1, 1, 1)),
 	m_direction(0),
@@ -20,12 +19,13 @@ Primitive::Primitive():
 	m_texture(nullptr),
 	m_normalmap(nullptr),
 	m_use_lightning(true)
-{}
+{
+	updateTransform();
+}
 
 Primitive::~Primitive()
 {
 	cleanup();
-	updateTransform();
 }
 
 //---------------------------------
@@ -119,9 +119,8 @@ void Primitive::updateTransform()
 
 void Primitive::cleanup()
 {
-	if (m_vertex_buffer) glDeleteBuffers     (1, &m_vertex_buffer);
-	if (m_vertex_array ) glDeleteVertexArrays(1, &m_vertex_array );
-	m_vertex_buffer = m_vertex_array = 0;
+	if (m_vertex_array) glDeleteVertexArrays(1, &m_vertex_array);
+	m_vertex_array = 0;
 }
 
 void Primitive::bindShader(Shader& shader) const

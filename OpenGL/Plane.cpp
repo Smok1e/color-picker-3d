@@ -29,7 +29,7 @@ void Plane::draw(Shader* shader /*= nullptr*/) const
 {
 	Primitive::draw(shader);
     glBindVertexArray(m_vertex_array);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, m_vertex_buffer.getVertexCount());
 	glBindVertexArray(0);
 }
 
@@ -69,21 +69,18 @@ void Plane::updateVertexData()
 
 	glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
 
-	Vertex vertices[4] = {
-		Vertex(a, uv_a, normal, tangent, bitangent),
-		Vertex(b, uv_b, normal, tangent, bitangent),
-		Vertex(c, uv_c, normal, tangent, bitangent),
-		Vertex(d, uv_d, normal, tangent, bitangent)
-	};
+	m_vertex_buffer += Vertex(a, uv_a, normal, tangent, bitangent);
+	m_vertex_buffer += Vertex(b, uv_b, normal, tangent, bitangent);
+	m_vertex_buffer += Vertex(c, uv_c, normal, tangent, bitangent);
+	m_vertex_buffer += Vertex(d, uv_d, normal, tangent, bitangent);
 
-	glGenBuffers(1, &m_vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof Vertex, vertices, GL_STATIC_DRAW);
+	m_vertex_buffer.commit();
+	m_vertex_buffer.bind();
 
 	glGenVertexArrays(1, &m_vertex_array);
 	glBindVertexArray(m_vertex_array);
 	Vertex::InitAttributes();
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	VertexBuffer::Unbind();
 	glBindVertexArray(0);
 }
 

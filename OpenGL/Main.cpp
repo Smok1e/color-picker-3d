@@ -20,7 +20,6 @@
 #include "Cylinder.hpp"
 #include "Plane.hpp"
 #include "Cone.hpp"
-#include "Model.hpp"
 #include "Utils.hpp"
 #include "Camera.hpp"
 #include "PrimitiveBuffer.hpp"
@@ -162,11 +161,11 @@ int main()
 	glfwSetWindowUserPointer(window, &window_data);
 
 	Texture texture;
-	texture.loadFromFile("Resources/Textures/rock/base.png");
+	texture.loadFromFile("Resources/Textures/rock1/base.png");
 	texture.setID(Texture::ID::BaseColor);
 
 	Texture normalmap;
-	normalmap.loadFromFile("Resources/Textures/rock/normal.png");
+	normalmap.loadFromFile("Resources/Textures/rock1/normal.png");
 	normalmap.setID(Texture::ID::Normal);
 
 	auto object = scene += new Plane;

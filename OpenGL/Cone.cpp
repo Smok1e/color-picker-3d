@@ -55,7 +55,7 @@ void Cone::draw(Shader* shader /*= nullptr*/) const
 {
 	Primitive::draw(shader);
 	glBindVertexArray(m_vertex_array);
-	glDrawArrays(GL_TRIANGLES, 0, m_vertex_count);
+	glDrawArrays(GL_TRIANGLES, 0, m_vertex_buffer.getVertexCount());
 	glBindVertexArray(0);
 }
 
@@ -75,8 +75,6 @@ void Cone::updateVertexData()
 	//			  radius       
 
 	glm::vec3 top(0, 0.5*m_height, 0);
-
-	std::vector<Vertex> vertices;
 	for (unsigned point = 0; point < m_point_count; point++)
 	{
 		double t_current = static_cast<double>(point)  /m_point_count;
@@ -90,22 +88,19 @@ void Cone::updateVertexData()
 
 		glm::vec3 normal = glm::normalize(glm::cross(b-top, a-top));
 
-		vertices.push_back(Vertex(a,   glm::vec2(t_current,                        1), normal));
-		vertices.push_back(Vertex(b,   glm::vec2(t_next,                           1), normal));
-		vertices.push_back(Vertex(top, glm::vec2(t_current+(t_next-t_current)*0.5, 0), normal));
+		m_vertex_buffer += Vertex(a,   glm::vec2(t_current,                        1), normal);
+		m_vertex_buffer += Vertex(b,   glm::vec2(t_next,                           1), normal);
+		m_vertex_buffer += Vertex(top, glm::vec2(t_current+(t_next-t_current)*0.5, 0), normal);
 	}
 
-	glGenBuffers(1, &m_vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof Vertex, vertices.data(), GL_STATIC_DRAW);
+	m_vertex_buffer.commit();
+	m_vertex_buffer.bind();
 
 	glGenVertexArrays(1, &m_vertex_array);
 	glBindVertexArray(m_vertex_array);
 	Vertex::InitAttributes();
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	VertexBuffer::Unbind();
 	glBindVertexArray(0);
-
-	m_vertex_count = vertices.size();
 }
 
 //-----------------------------------

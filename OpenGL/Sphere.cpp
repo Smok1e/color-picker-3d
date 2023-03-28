@@ -77,7 +77,6 @@ void Sphere::updateVertexData()
 {
 	cleanup();
 
-	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
 	for (size_t lat = 1, index = 0; lat <= m_latitude_points; lat++)
 	{
@@ -98,7 +97,7 @@ void Sphere::updateVertexData()
 		   glm::vec3 position = glm::vec3(x*zr0, y*zr0, z0)*m_radius;
 		   glm::vec3 normal = glm::normalize(position);
 		   glm::vec2 texcoord(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
-		   vertices.push_back(Vertex(position, texcoord, normal));
+		   m_vertex_buffer += Vertex(position, texcoord, normal);
 
            indices.push_back(index);
 		   index++;
@@ -106,7 +105,7 @@ void Sphere::updateVertexData()
 		   position = glm::vec3(x*zr1, y*zr1, z1)*m_radius;
 		   normal = glm::normalize(position);
 		   texcoord = glm::vec2(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
-		   vertices.push_back(Vertex(position, texcoord, normal));
+		   m_vertex_buffer += Vertex(position, texcoord, normal);
 
            indices.push_back(index);
 		   index++;
@@ -115,14 +114,13 @@ void Sphere::updateVertexData()
         indices.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
 	}
 
-	glGenBuffers(1, &m_vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof Vertex, vertices.data(), GL_STATIC_DRAW);
+	m_vertex_buffer.commit();
+	m_vertex_buffer.bind();
 
 	glGenVertexArrays(1, &m_vertex_array);
 	glBindVertexArray(m_vertex_array);
 	Vertex::InitAttributes();
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	VertexBuffer::Unbind();
 	glBindVertexArray(0);
 
     glGenBuffers(1, &m_index_buffer);

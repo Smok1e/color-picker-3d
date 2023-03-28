@@ -20,7 +20,7 @@ void Cylinder::draw(Shader* shader /*= nullptr*/) const
 {
 	Primitive::draw(shader);
 	glBindVertexArray(m_vertex_array);
-	glDrawArrays(GL_TRIANGLES, 0, m_vertex_count);
+	glDrawArrays(GL_TRIANGLES, 0, m_vertex_buffer.getVertexCount());
 	glBindVertexArray(0);
 }
 
@@ -63,7 +63,6 @@ unsigned Cylinder::getPointCount() const
 
 void Cylinder::updateVertexData()
 {
-	std::vector<Vertex> vertices;
 	for (unsigned point = 0; point < m_point_count; point++)
 	{
 		double t_current = static_cast<double>(point)  /m_point_count;
@@ -88,26 +87,23 @@ void Cylinder::updateVertexData()
 
 		glm::vec3 normal = glm::normalize(glm::cross(b-a, c-a));
 
-		vertices.push_back(Vertex(a, glm::vec2(t_current, 0), normal));
-		vertices.push_back(Vertex(b, glm::vec2(t_next,    0), normal));
-		vertices.push_back(Vertex(c, glm::vec2(t_current, 1), normal));
+		m_vertex_buffer += Vertex(a, glm::vec2(t_current, 0), normal);
+		m_vertex_buffer += Vertex(b, glm::vec2(t_next,    0), normal);
+		m_vertex_buffer += Vertex(c, glm::vec2(t_current, 1), normal);
 
-		vertices.push_back(Vertex(b, glm::vec2(t_next,    0), normal));
-		vertices.push_back(Vertex(c, glm::vec2(t_current, 1), normal));
-		vertices.push_back(Vertex(d, glm::vec2(t_next,    1), normal));
+		m_vertex_buffer += Vertex(b, glm::vec2(t_next,    0), normal);
+		m_vertex_buffer += Vertex(c, glm::vec2(t_current, 1), normal);
+		m_vertex_buffer += Vertex(d, glm::vec2(t_next,    1), normal);
 	}
 
-	glGenBuffers(1, &m_vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof Vertex, vertices.data(), GL_STATIC_DRAW);
+	m_vertex_buffer.commit();
+	m_vertex_buffer.bind();
 
 	glGenVertexArrays(1, &m_vertex_array);
 	glBindVertexArray(m_vertex_array);
 	Vertex::InitAttributes();
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	VertexBuffer::Unbind();
 	glBindVertexArray(0);
-
-	m_vertex_count = vertices.size();
 }
 
 //---------------------------------

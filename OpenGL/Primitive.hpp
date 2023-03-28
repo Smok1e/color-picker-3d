@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vertex.hpp"
+#include "VertexBuffer.hpp"
 #include "Color.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
@@ -42,9 +42,8 @@ protected:
 	virtual void updateTransform();
 	virtual void bindShader(Shader& shader) const;
 
-	GLuint m_vertex_buffer;
+	VertexBuffer m_vertex_buffer;
 	GLuint m_vertex_array;
-	size_t m_vertex_count;
 
 	Texture* m_texture;
 	Texture* m_normalmap;

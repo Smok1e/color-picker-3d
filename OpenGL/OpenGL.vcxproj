@@ -136,7 +136,6 @@
     <ClCompile Include="DebugVisualization.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="PrimitiveBuffer.cpp" />
@@ -145,6 +144,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Vertex.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
@@ -154,7 +154,6 @@
     <ClInclude Include="DebugVisualization.hpp" />
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Cylinder.hpp" />
-    <ClInclude Include="Model.hpp" />
     <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />
@@ -162,6 +161,7 @@
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="Vertex.hpp" />
+    <ClInclude Include="VertexBuffer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\shader.frag" />

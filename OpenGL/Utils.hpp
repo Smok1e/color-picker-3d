@@ -4,23 +4,40 @@
 #include <glm/glm.hpp>
 #include <cstdio>
 #include <string>
+#include <Windows.h>
 #include <vector>
 
 //-----------------------------------
 
 constexpr size_t BUFFSIZE = 1024;
 
-#if defined(_DEBUG) || defined(FORCE_GL_CHECK)
-	#define glcheck CheckOpenGLError(__FILE__, __FUNCSIG__, __LINE__);
-#endif
-
 //-----------------------------------
 
-#define inspect(expression) Inspect(#expression, expression)
+template<typename T>
+T CheckOpenGLCall(T expr_result, const char* expression, const char* file, const char* line);
 
 void CheckOpenGLError(const char* file, const char* func, int line);
 void GetOpenGLErrorMessage(GLenum code, const char** name, const char** description);
 void glSetEnabled(GLenum index, bool state);
+
+//-----------------------------------
+
+#if defined(_DEBUG) || defined(FORCE_GL_CHECK)
+	// Checks for opengl error
+	#define glcheck CheckOpenGLError(__FILE__, __FUNCSIG__, __LINE__);
+
+	// Checks for opengl error after call of some opengl function
+	#define glSafeCall(expression) CheckOpenGLCall(expression, #expression, __FILE__, __LINE__)
+#else
+	// Disabled in release build
+	#define glcheck ;
+
+	// Disabled in release build
+	#define glSafeCall(expression) expression
+#endif
+
+#define inspect(expression) Inspect(#expression, expression)
+#define glSafeCall(expression) 
 
 //-----------------------------------
 
@@ -54,6 +71,28 @@ T Inspect(const char* expression, const T& value)
 {
 	printf("[%-100s] = %s\n", expression, std::to_string(value).c_str());
 	return value;
+}
+
+//-----------------------------------
+
+template<typename T>
+T CheckOpenGLCall(T expr_result, const char* expression, const char* file, const char* line)
+{
+	GLenum code = glGetError();
+	if (code != GL_NO_ERROR)
+	{
+		const char* name = nullptr;
+		const char* description = nullptr;
+		GetOpenGLErrorMessage(code, &name, &description);
+
+		static char buffer[BUFFSIZE] = "";
+		sprintf_s(buffer, "Expression '%s' (at line #%d in file %s) caused OpenGL error: %s\n", expression, line, file, name);
+		fprintf(stderr, buffer);
+		
+		MessageBoxA(nullptr, buffer, "OpenGL expression error", MB_ICONERROR | MB_OK);
+	}
+
+	return expr_result;
 }
 
 //-----------------------------------

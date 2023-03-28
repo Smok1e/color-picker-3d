@@ -8,7 +8,8 @@
 
 void CheckOpenGLError(const char* file, const char* func, int line)
 {
-	if (GLenum code = glGetError())
+	GLenum code = glGetError();
+	if (code != GL_NO_ERROR)
 	{
 		const char* name = nullptr;
 		const char* description = nullptr;
