@@ -1,7 +1,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
+
 #include "Color.hpp"
+#include "Shader.hpp"
 
 //---------------------------------
 
@@ -9,6 +11,8 @@ class Light
 {
 public:
 	Light();
+
+	virtual void apply(Shader& shader, size_t index) const;
 
 	virtual void setPosition(const glm::vec3& position);
 	virtual glm::vec3 getPosition() const;

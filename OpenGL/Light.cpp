@@ -63,3 +63,14 @@ float Light::getSpecularStrength() const
 }
 
 //---------------------------------
+
+void Light::apply(Shader& shader, size_t index) const
+{
+	shader.setUniformFormatted(m_position,          "lights[%zu].position", index);
+	shader.setUniformFormatted(m_color,             "lights[%zu].color",    index);
+	shader.setUniformFormatted(m_ambient_strength,  "lights[%zu].ambient",  index);
+	shader.setUniformFormatted(m_diffuse_strength,  "lights[%zu].diffuse",  index);
+	shader.setUniformFormatted(m_specular_strength, "lights[%zu].specular", index);	
+}
+
+//---------------------------------

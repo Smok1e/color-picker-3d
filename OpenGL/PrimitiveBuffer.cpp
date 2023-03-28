@@ -32,6 +32,12 @@ bool PrimitiveBuffer::addObject(Primitive* object)
 
 bool PrimitiveBuffer::addObject(Light* light)
 {
+	if (m_lights.size() >= LIGHTS_MAX)
+	{
+		printf("Lights limit reached\n");
+		return false;
+	}
+
 	auto iter = std::find(m_lights.begin(), m_lights.end(), light);
 	if (iter != m_lights.end())
 		return false;
@@ -67,17 +73,8 @@ bool PrimitiveBuffer::deleteObject(Light* light)
 void PrimitiveBuffer::drawObjects(Shader* shader /*= nullptr*/)
 {
 	if (shader)
-	{
-		for (size_t i = 0, lights_count = m_lights.size(); i < lights_count && i < LIGHTS_MAX; i++)
-		{
-			Light* light = m_lights[i];
-			shader->setUniformFormatted(light->getPosition(),         "lights[%zu].position", i);
-			shader->setUniformFormatted(light->getColor(),            "lights[%zu].color",    i);
-			shader->setUniformFormatted(light->getAmbientStrength(),  "lights[%zu].ambient",  i);
-			shader->setUniformFormatted(light->getDiffuseStrength(),  "lights[%zu].diffuse",  i);
-			shader->setUniformFormatted(light->getSpecularStrength(), "lights[%zu].specular", i);
-		}
-	}
+		for (size_t i = 0, lights_count = m_lights.size(); i < lights_count; i++)
+			m_lights[i]->apply(*shader, i);
 
 	for (const auto& object: m_objects)
 		object -> draw(shader);

@@ -23,6 +23,7 @@ out vec3 FragPos;
 out vec4 FragColor;
 out vec2 FragTexCoord;
 out vec3 FragNormal;
+out mat3 FragTBN;
 
 //---------------------------------
 
@@ -38,6 +39,12 @@ void main ()
     FragColor = shapeColor; 
     FragNormal = mat3(transpose(inverse(shapeTransform)))*normal;
     FragTexCoord = texcoord;
+
+    FragTBN = mat3(
+        normalize(vec3(shapeTransform*vec4(tangent,   0))),
+        normalize(vec3(shapeTransform*vec4(bitangent, 0))),
+        normalize(vec3(shapeTransform*vec4(normal,    0)))
+    );
 }
 
 //---------------------------------

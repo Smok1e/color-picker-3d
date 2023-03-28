@@ -31,11 +31,6 @@ void Plane::draw(Shader* shader /*= nullptr*/) const
     glBindVertexArray(m_vertex_array);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
-
-	glm::vec3 normal;
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertex_buffer);
-	glGetBufferSubData(GL_ARRAY_BUFFER, offsetof(Vertex, normal), sizeof Vertex::normal, &normal);
-	DrawVector(shader, m_position, m_transform*glm::vec4(normal, 1));
 }
 
 //---------------------------------
@@ -49,13 +44,36 @@ void Plane::updateVertexData()
 	glm::vec3 c( m_size.x/2, 0, -m_size.y/2);
 	glm::vec3 d( m_size.x/2, 0,  m_size.y/2);
 
-	glm::vec3 normal = glm::normalize(glm::cross(b-a, c-a));
+	glm::vec2 uv_a(0, 0);
+	glm::vec2 uv_b(0, 1);
+	glm::vec2 uv_c(1, 0);
+	glm::vec2 uv_d(1, 1);
+
+	glm::vec3 edge1 = b-a;
+	glm::vec3 edge2 = c-a;
+	glm::vec2 delta_uv1 = uv_b-uv_a;
+	glm::vec2 delta_uv2 = uv_c-uv_a;
+
+	float f = 1.f / (delta_uv1.x*delta_uv2.y - delta_uv2.x*delta_uv1.y);
+	glm::vec3 tangent = f*glm::vec3(
+		delta_uv2.y * edge1.x - delta_uv1.y * edge2.x,
+		delta_uv2.y * edge1.y - delta_uv1.y * edge2.y,
+		delta_uv2.y * edge1.z - delta_uv1.y * edge2.z
+	);
+
+	glm::vec3 bitangent = f*glm::vec3(
+		-delta_uv2.x * edge1.x + delta_uv1.x * edge2.x,
+		-delta_uv2.x * edge1.y + delta_uv1.x * edge2.y,
+		-delta_uv2.x * edge1.z + delta_uv1.x * edge2.z
+	);
+
+	glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
 
 	Vertex vertices[4] = {
-		Vertex(a, glm::vec2(0, 0), normal),
-		Vertex(b, glm::vec2(0, 1), normal),
-		Vertex(c, glm::vec2(1, 0), normal),
-		Vertex(d, glm::vec2(1, 1), normal),
+		Vertex(a, uv_a, normal, tangent, bitangent),
+		Vertex(b, uv_b, normal, tangent, bitangent),
+		Vertex(c, uv_c, normal, tangent, bitangent),
+		Vertex(d, uv_d, normal, tangent, bitangent)
 	};
 
 	glGenBuffers(1, &m_vertex_buffer);

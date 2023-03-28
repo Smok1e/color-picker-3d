@@ -19,6 +19,7 @@ in vec3 FragPos;
 in vec4 FragColor;
 in vec2 FragTexCoord;
 in vec3 FragNormal;
+in mat3 FragTBN;
 
 uniform vec3 viewPos;
 
@@ -41,7 +42,7 @@ vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos);
 void main()
 {
     vec4 fragColor = useTexture? texture(shapeTexture, FragTexCoord): FragColor;
-    vec3 fragNormal = useNormalMap? 2.0*texture(shapeNormalMap, FragTexCoord).xyz - 1.0: FragNormal;
+    vec3 fragNormal = useNormalMap? FragTBN*(2.0*texture(shapeNormalMap, FragTexCoord).xyz - 1.0): FragNormal;
 
     if (useLightning)
     {

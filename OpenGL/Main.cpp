@@ -49,8 +49,6 @@ struct WindowData
 	float fov;
 	float fov_vel;
 	float aspect_ratio;
-	Primitive* obj1;
-	Primitive* obj2;
 };
 
 //-----------------------------------
@@ -173,21 +171,29 @@ int main()
 
 	auto object = scene += new Plane;
 	object->setTexture(&texture);
-	//object->setNormalMap(&normalmap);
+	object->setNormalMap(&normalmap);
 
-	auto light = scene += new Light;
-	light->setColor("#FFF7C9");
-	light->setPosition(glm::vec3(0, 0, 1));
+	auto light1 = scene += new Light;
+	light1->setColor("#FFF7C9");
+	light1->setPosition(glm::vec3(-.5f, 0, 1));
 
-	auto light_shape = scene += new Sphere;
-	light_shape->setRadius(.1f);
-	light_shape->setColor(light->getColor());
-	light_shape->setPosition(light->getPosition());
-	light_shape->setPointCount(64, 64);
-	light_shape->setLightningEnabled(false);
+	auto light1_shape = scene += new Sphere;
+	light1_shape->setLightningEnabled(false);
+	light1_shape->setRadius(.1f);
+	light1_shape->setColor(light1->getColor());
+	light1_shape->setPosition(light1->getPosition());
+	light1_shape->setPointCount(64, 64);
 
-	window_data.obj1 = light_shape;
-	window_data.obj2 = object;
+	auto light2 = scene += new Light;
+	light2->setColor("#33A7FF");
+	light2->setPosition(glm::vec3(.5f, 0, 1));
+	light2->setAmbientStrength(0);
+
+	auto light2_shape = scene += new Cube;
+	light2_shape->setLightningEnabled(false);
+	light2_shape->setSize(glm::vec3(.1f));
+	light2_shape->setColor(light2->getColor());
+	light2_shape->setPosition(light2->getPosition());
 
 	double object_rotation_angle = 0;
 	while (!glfwWindowShouldClose(window))
