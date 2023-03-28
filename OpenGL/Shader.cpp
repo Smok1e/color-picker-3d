@@ -27,16 +27,30 @@ GLuint Shader::getNativeHandle()
 
 bool Shader::loadFromMemory(const std::string& source, Shader::Type type)
 {
-	if (type == Shader::Vertex) return compile(source.data(), nullptr);
-	else if (type == Shader::Fragment) return compile(source.data(), nullptr);
+	switch (type)
+	{
+		case Shader::Type::Vertex:
+			return compile(source.data(), nullptr, nullptr);
+			break;
 
-	printf("Trying to load unknown type of shader (0x%02X)\n", type);
+		case Shader::Type::Fragment:
+			return compile(nullptr, source.data(), nullptr);
+			break;
+
+		case Shader::Type::Geometry:
+			return compile(nullptr, nullptr, source.data());
+			break;
+
+		default:
+			break;
+	}
+
 	return false;
 }
 
-bool Shader::loadFromMemory(const std::string& vertex_source, const std::string& fragment_source)
+bool Shader::loadFromMemory(const std::string& vertex_source, const std::string& fragment_source, const std::string& geometry_source)
 {
-	return compile(vertex_source.data(), fragment_source.data());
+	return compile(vertex_source.data(), fragment_source.data(), geometry_source.data());
 }
 
 //---------------------------------
@@ -48,15 +62,13 @@ bool Shader::loadFromStream(std::ifstream& stream, Shader::Type type)
 	return loadFromMemory(buffer.data(), type);
 }
 
-bool Shader::loadFromStream(std::ifstream& vertex_stream, std::ifstream& fragment_stream)
+bool Shader::loadFromStream(std::ifstream& vertex_stream, std::ifstream& fragment_stream, std::ifstream& geometry_stream)
 {
-	std::vector <char> vertex_buffer;
-	ReadStream(vertex_stream, &vertex_buffer);
-
-	std::vector <char> fragment_buffer;
+	std::vector<char> vertex_buffer, fragment_buffer, geometry_buffer;
+	ReadStream(vertex_stream,   &vertex_buffer  );
 	ReadStream(fragment_stream, &fragment_buffer);
-
-	return loadFromMemory(vertex_buffer.data(), fragment_buffer.data());
+	ReadStream(geometry_stream, &geometry_buffer);
+	return loadFromMemory(vertex_buffer.data(), fragment_buffer.data(), geometry_buffer.data());
 }
 
 //---------------------------------
@@ -77,7 +89,7 @@ bool Shader::loadFromFile(const std::filesystem::path& filename, Shader::Type ty
 	return result;
 }
 
-bool Shader::loadFromFile(const std::filesystem::path& vertex_filename, const std::filesystem::path& fragment_filename)
+bool Shader::loadFromFile(const std::filesystem::path& vertex_filename, const std::filesystem::path& fragment_filename, const std::filesystem::path& geometry_filename)
 {
 	std::ifstream vertex_stream;
 	vertex_stream.open(vertex_filename);
@@ -96,16 +108,27 @@ bool Shader::loadFromFile(const std::filesystem::path& vertex_filename, const st
 		return false;
 	}
 
-	bool result = loadFromStream(vertex_stream, fragment_stream);
+	std::ifstream geometry_stream;
+	geometry_stream.open(geometry_filename);
+	if (!geometry_stream)
+	{
+		vertex_stream.close();
+		fragment_stream.close();
+		printf("Failed to load geometry shader source '%s'\n", geometry_filename.string().c_str());
+		return false;
+	}
+
+	bool result = loadFromStream(vertex_stream, fragment_stream, geometry_stream);
 
 	vertex_stream.close();
 	fragment_stream.close();
+	geometry_stream.close();
 	return result;
 }
 
 //---------------------------------
 
-bool Shader::compile(const char* vertex_source, const char* fragment_source)
+bool Shader::compile(const char* vertex_source, const char* fragment_source, const char* geometry_source)
 {
 	// Deleting previously generated shader program
 	if (m_program_handle) glSafeCallVoid(glDeleteProgram(m_program_handle));
@@ -157,6 +180,27 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source)
 
 		glSafeCallVoid(glAttachShader(m_program_handle, fragment_shader));
 		glSafeCallVoid(glDeleteShader(fragment_shader));
+	}
+
+	if (geometry_source)
+	{
+		// And geometry shader
+		GLuint geometry_shader = glSafeCall(glCreateShader(GL_GEOMETRY_SHADER));
+		glSafeCallVoid(glShaderSource(geometry_shader, 1, &geometry_source, nullptr));
+		glSafeCallVoid(glCompileShader(geometry_shader));
+
+		glSafeCallVoid(glGetShaderiv(geometry_shader, GL_COMPILE_STATUS, &success));
+		if (!success)
+		{
+			glSafeCallVoid(glGetShaderInfoLog(geometry_shader, sizeof(info), NULL, info));
+			printf("Geometry shader compilation failed:\n%s\n", info);
+
+			glSafeCallVoid(glDeleteShader(geometry_shader));
+			return false;
+		}
+
+		glSafeCallVoid(glAttachShader(m_program_handle, geometry_shader));
+		glSafeCallVoid(glDeleteShader(geometry_shader));
 	}
 
 	// Linking program and checking result

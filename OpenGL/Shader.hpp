@@ -18,13 +18,14 @@
 class Shader
 {
 public:
-	enum Type
+	enum class Type
 	{
 		Vertex,
-		Fragment
+		Fragment,
+		Geometry
 	};
 
-	class UniformBinder 
+	class UniformBinder
 	{
 	public:
 		constexpr UniformBinder(Shader* shader, const char* name):
@@ -53,19 +54,19 @@ public:
 	bool loadFromMemory(const std::string& source, Shader::Type type);
 
 	// Loads and compiles shader program with both types of shaders from source code
-	bool loadFromMemory(const std::string& vertex_source, const std::string& fragment_source);
+	bool loadFromMemory(const std::string& vertex_source, const std::string& fragment_source, const std::string& geometry_source);
 
 	// Loads and compiles shader program with specified type from stream
 	bool loadFromStream(std::ifstream& stream, Shader::Type type);
 
 	// Loads and compiles shader program with both types of shaders from stream
-	bool loadFromStream(std::ifstream& vertex_stream, std::ifstream& fragment_stream);
+	bool loadFromStream(std::ifstream& vertex_stream, std::ifstream& fragment_stream, std::ifstream& geometry_stream);
 
 	// Loads and compiles shader program with specified type from file
 	bool loadFromFile(const std::filesystem::path& filename, Shader::Type type);
 
 	// Loads and compiles shader program with both types of shaders from file
-	bool loadFromFile(const std::filesystem::path& vertex_filename, const std::filesystem::path& fragment_filename);
+	bool loadFromFile(const std::filesystem::path& vertex_filename, const std::filesystem::path& fragment_filename, const std::filesystem::path& geometry_filename);
 
 	// Binds the program
 	void use();
@@ -97,10 +98,10 @@ public:
 	bool setUniformArrayElement(const char* name, size_t index, T value);
 
 protected:
-	GLuint m_program_handle;
-
-	bool compile(const char* vertex_source, const char* fragment_source);
+	bool compile(const char* vertex_source, const char* fragment_source, const char* geometry_source);
 	GLint getUniformLocation(const char* name);
+
+	GLuint m_program_handle;
 
 };
 

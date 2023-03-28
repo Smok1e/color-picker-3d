@@ -82,6 +82,8 @@ void Plane::updateVertexData()
 	Vertex::InitAttributes();
 	VertexBuffer::Unbind();
 	glSafeCallVoid(glBindVertexArray(0));
+
+	VertexBuffer::Unbind();
 }
 
 //---------------------------------

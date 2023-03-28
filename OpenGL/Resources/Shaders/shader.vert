@@ -19,11 +19,11 @@ uniform vec4 shapeColor;
 uniform bool      useBumpMap;
 uniform sampler2D shapeBumpMap;
 
-out vec3 FragPos;
-out vec4 FragColor;
-out vec2 FragTexCoord;
-out vec3 FragNormal;
-out mat3 FragTBN;
+out vec3 GeoPos;
+out vec4 GeoColor;
+out vec2 GeoTexCoord;
+out vec3 GeoNormal;
+out mat3 GeoTBN;
 
 //---------------------------------
 
@@ -35,12 +35,12 @@ void main ()
     vec4 offset = vec4(shapeOffset, 0);
     gl_Position = projection * view * (offset + shapeTransform * modelVertexPosition);
 
-    FragPos = vec3(offset + modelVertexPosition);
-    FragColor = shapeColor; 
-    FragNormal = mat3(transpose(inverse(shapeTransform)))*normal;
-    FragTexCoord = texcoord;
+    GeoPos = vec3(offset + modelVertexPosition);
+    GeoColor = shapeColor; 
+    GeoNormal = mat3(transpose(inverse(shapeTransform)))*normal;
+    GeoTexCoord = texcoord;
 
-    FragTBN = mat3(
+    GeoTBN = mat3(
         normalize(vec3(shapeTransform*vec4(tangent,   0))),
         normalize(vec3(shapeTransform*vec4(bitangent, 0))),
         normalize(vec3(shapeTransform*vec4(normal,    0)))

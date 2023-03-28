@@ -68,7 +68,7 @@ size_t VertexBuffer::getVertexCount() const
 void VertexBuffer::commit()
 {
 	bind();
-	glSafeCallVoid(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof Vertex, m_vertices.data(), m_usage));
+	glSafeCallVoid(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof Vertex, m_vertices.data(), static_cast<GLenum>(m_usage)));
 	m_vertex_count = m_vertices.size();
 	m_vertices.clear();
 	Unbind();

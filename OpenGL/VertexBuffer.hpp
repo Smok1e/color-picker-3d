@@ -9,7 +9,7 @@
 class VertexBuffer
 {
 public:
-	enum Usage {
+	enum class Usage {
 		StreamDraw  = GL_STREAM_DRAW,  // Use StreamDraw if the data will be modified and used few times
 		StaticDraw  = GL_STATIC_DRAW,  // Use StaticDraw if the data will be modified rarely and often used
 		DynamicDraw = GL_DYNAMIC_DRAW, // Use DynamicDraw if the data will be modified and used often

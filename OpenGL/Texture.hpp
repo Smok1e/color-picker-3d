@@ -12,7 +12,12 @@ class Texture
 public:
 	enum class ID {
 		BaseColor,
-		Normal
+		NormalMap
+	};
+
+	enum class Filter {
+		NearestNeightbour = GL_NEAREST,
+		LinearInterpolation = GL_LINEAR
 	};
 
 	Texture();
@@ -43,7 +48,12 @@ public:
 	void setParameter(GLenum name, GLint parameter);
 	void setParameter(GLenum name, const GLint* parameters);
 
-	void setID(ID usage);
+	void setMinifierFilter(Filter filter);
+	void setMagnifierFilter(Filter filter);
+	void setFilters(Filter minifier, Filter magnifier);
+	void setFilters(Filter filter);
+
+	void setID(ID id);
 	ID getID() const;
 
 protected:

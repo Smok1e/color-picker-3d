@@ -140,7 +140,7 @@ int main()
 	glSafeCallVoid(glDepthFunc(GL_LESS));
 
 	Shader shader;
-	if (!shader.loadFromFile("Resources/Shaders/shader.vert", "Resources/Shaders/shader.frag"))
+	if (!shader.loadFromFile("Resources/Shaders/shader.vert", "Resources/Shaders/shader.frag", "Resources/Shaders/shader.geom"))
 		return 0;
 
 	Camera camera;
@@ -163,15 +163,18 @@ int main()
 	glfwSetWindowUserPointer(window, &window_data);
 
 	Texture texture;
-	texture.loadFromFile("Resources/Textures/rock1/base.png");
+	texture.loadFromFile("Resources/Textures/rock/base.png");
 	texture.setID(Texture::ID::BaseColor);
+	texture.setFilters(Texture::Filter::NearestNeightbour);
 
 	Texture normalmap;
-	normalmap.loadFromFile("Resources/Textures/rock1/normal.png");
-	normalmap.setID(Texture::ID::Normal);
+	normalmap.loadFromFile("Resources/Textures/rock/normal.png");
+	normalmap.setID(Texture::ID::NormalMap);
+	normalmap.setFilters(Texture::Filter::NearestNeightbour);
 
 	auto object = scene += new Plane;
-	object->setTexture(&texture);
+	object->setColor(Color(0, .7, 1));
+	//object->setTexture(&texture);
 	object->setNormalMap(&normalmap);
 
 	auto light1 = scene += new Light;

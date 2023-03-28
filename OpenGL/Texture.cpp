@@ -120,11 +120,32 @@ void Texture::setParameter(GLenum name, const GLint* parameters)
 	glSafeCallVoid(glTextureParameteriv(m_texture_handle, name, parameters));
 }
 
+void Texture::setMinifierFilter(Texture::Filter filter)
+{
+	setParameter(GL_TEXTURE_MIN_FILTER, static_cast<GLint>(filter));
+}
+
+void Texture::setMagnifierFilter(Texture::Filter filter)
+{
+	setParameter(GL_TEXTURE_MAG_FILTER, static_cast<GLint>(filter));
+}
+
+void Texture::setFilters(Texture::Filter minifier, Texture::Filter magnifier)
+{
+	setMinifierFilter (minifier );
+	setMagnifierFilter(magnifier);
+}
+
+void Texture::setFilters(Texture::Filter filter)
+{
+	setFilters(filter, filter);
+}
+
 //---------------------------------
 
-void Texture::setID(Texture::ID usage)
+void Texture::setID(Texture::ID id)
 {
-	m_id = usage;
+	m_id = id;
 }
 
 Texture::ID Texture::getID() const

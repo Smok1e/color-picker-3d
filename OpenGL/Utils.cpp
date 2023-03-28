@@ -18,7 +18,20 @@ void CheckOpenGLCall(const char* expression, const char* file, int line)
 		fprintf(stderr, "Expression '%s' (at line #%d in file %s) caused OpenGL error: %s\n", expression, line, file, name);
 
 		static char buffer[BUFFSIZE] = "";
-		sprintf_s(buffer, "Expression '%s' (at line #%d in file %s) caused OpenGL error: %s\n\nPress [YES] to debug break", expression, line, file, name);
+		sprintf_s(
+			buffer, 
+			"Expression:\n"
+			"%s\n"
+			"\n"
+			"Caused error: %s\n"
+			"File: %s\n"
+			"Line: %d\n"
+			"Press [YES] to debug break",
+			expression,
+			name,
+			file,
+			line
+		);
 		
 		if (MessageBoxA(nullptr, buffer, "OpenGL expression error", MB_ICONERROR | MB_YESNO) == IDYES)
 			DebugBreak();
