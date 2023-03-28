@@ -71,6 +71,8 @@ glm::vec2 CenterCursor(GLFWwindow* window);
 // Sets interface visibility state according to parameter; It also moves cursor back to center if interface becomes visible
 void SetInterfaceVisible(GLFWwindow* window, bool visible);
 
+void Cleanup();
+
 //-----------------------------------
 
 int main()
@@ -125,17 +127,17 @@ int main()
 		return false;
 	}
 
-	printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
+	printf("OpenGL Version: %s\n", glSafeCall(glGetString(GL_VERSION)));
 
 	int width = 0, height = 0;
 	glfwGetFramebufferSize(window, &width, &height);
-	glViewport(0, 0, width, height);
+	glSafeCallVoid(glViewport(0, 0, width, height));
 
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glEnable(GL_MULTISAMPLE);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthFunc(GL_LESS);
+	glSafeCallVoid(glEnable(GL_DEPTH_TEST));
+	glSafeCallVoid(glEnable(GL_BLEND));
+	glSafeCallVoid(glEnable(GL_MULTISAMPLE));
+	glSafeCallVoid(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	glSafeCallVoid(glDepthFunc(GL_LESS));
 
 	Shader shader;
 	if (!shader.loadFromFile("Resources/Shaders/shader.vert", "Resources/Shaders/shader.frag"))
@@ -211,12 +213,7 @@ int main()
 		DoRender(window);
 	}
 
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	atexit(Cleanup);
 }
 
 //-----------------------------------
@@ -234,8 +231,8 @@ void DoRender(GLFWwindow* window)
 	ImGui::NewFrame();
 	DrawInterface(window);	
 
-	glClearColor(Color(.05f, .05f, .05f));
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glSafeCallVoid(glClearColor(Color(.05f, .05f, .05f)));
+	glSafeCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 	shader["projection"] = *window_data->projection;
 	shader["view"      ] = window_data->camera->getView();
@@ -261,9 +258,9 @@ void DrawInterface(GLFWwindow* window)
 	if (window_data->interface_visible)
 	{
 		GLint polygon_render_mode[2] = {};
-		glGetIntegerv(GL_POLYGON_MODE, polygon_render_mode);
+		glSafeCallVoid(glGetIntegerv(GL_POLYGON_MODE, polygon_render_mode));
 
-		bool depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
+		bool depth_test_enabled = glSafeCall(glIsEnabled(GL_DEPTH_TEST));
 
 		ImGui::Begin("Debug");
 
@@ -294,8 +291,8 @@ void DrawInterface(GLFWwindow* window)
 
 		ImGui::End();
 
-		glSetEnabled(GL_DEPTH_TEST, depth_test_enabled);
-		glPolygonMode(GL_FRONT_AND_BACK, *polygon_render_mode);
+		glSafeCallVoid(glSetEnabled(GL_DEPTH_TEST, depth_test_enabled));
+		glSafeCallVoid(glPolygonMode(GL_FRONT_AND_BACK, *polygon_render_mode));
 	}
 
 	else ImGui::SetMouseCursor(ImGuiMouseCursor_None);
@@ -412,23 +409,21 @@ void OnToggleRenderMode(GLFWwindow* window)
 {
 	GLint current_polygon_mode[2] = {};
 
-	glGetIntegerv(GL_POLYGON_MODE, current_polygon_mode);
+	glSafeCallVoid(glGetIntegerv(GL_POLYGON_MODE, current_polygon_mode));
 	switch (*current_polygon_mode)
 	{
 		case GL_FILL:
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glSafeCallVoid(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 			break;
 
 		case GL_LINE:
-			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			glSafeCallVoid(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
 			break;
 
 		case GL_POINT:
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glSafeCallVoid(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 			break;
 	}
-
-	glcheck;
 }
 
 //-----------------------------------
@@ -459,7 +454,7 @@ void OnSaveScreenshot(GLFWwindow* window)
 	std::filesystem::path path = capture_directory/filename;
 
 	GLint dims[4] = {0};
-	glGetIntegerv(GL_VIEWPORT, dims);
+	glSafeCallVoid(glGetIntegerv(GL_VIEWPORT, dims));
 	glm::uvec2 framesize(dims[2], dims[3]);
 
 	// Hide GUI and rerender frame if interface was active
@@ -471,7 +466,7 @@ void OnSaveScreenshot(GLFWwindow* window)
 	}
 
 	uint8_t* data = new uint8_t[3*framesize.x*framesize.y];
-	glReadPixels(0, 0, framesize.x, framesize.y, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glSafeCallVoid(glReadPixels(0, 0, framesize.x, framesize.y, GL_RGB, GL_UNSIGNED_BYTE, data));
 
 	if (was_interface_visible && window_data->screenshot_hide_interface) 
 		SetInterfaceVisible(window, true);
@@ -518,6 +513,16 @@ void SetInterfaceVisible(GLFWwindow* window, bool visible)
 
 	if (!(window_data->interface_visible = visible))
 		CenterCursor(window);
+}
+
+//-----------------------------------
+
+void Cleanup()
+{
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+	glfwTerminate();
 }
 
 //-----------------------------------

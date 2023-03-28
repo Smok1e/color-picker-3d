@@ -13,7 +13,7 @@ Shader::Shader():
 
 Shader::~Shader()
 {
-	if (m_program_handle) glDeleteProgram(m_program_handle);
+	if (m_program_handle) glSafeCallVoid(glDeleteProgram(m_program_handle));
 }
 
 //---------------------------------
@@ -108,10 +108,10 @@ bool Shader::loadFromFile(const std::filesystem::path& vertex_filename, const st
 bool Shader::compile(const char* vertex_source, const char* fragment_source)
 {
 	// Deleting previously generated shader program
-	if (m_program_handle) glDeleteProgram(m_program_handle);
+	if (m_program_handle) glSafeCallVoid(glDeleteProgram(m_program_handle));
 
 	// Creating new programe
-	m_program_handle = glCreateProgram();
+	m_program_handle = glSafeCall(glCreateProgram());
 
 	static GLchar info[512] = "";
 	static GLint  success = 0;
@@ -119,52 +119,52 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source)
 	if (vertex_source)
 	{
 		// Creating and compiling shader
-		GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertex_shader, 1, &vertex_source, nullptr);
-		glCompileShader(vertex_shader);
+		GLuint vertex_shader = glSafeCall(glCreateShader(GL_VERTEX_SHADER));
+		glSafeCallVoid(glShaderSource(vertex_shader, 1, &vertex_source, nullptr));
+		glSafeCallVoid(glCompileShader(vertex_shader));
 
-		glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+		glSafeCallVoid(glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success));
 		if (!success)
 		{
-			glGetShaderInfoLog(vertex_shader, sizeof(info), NULL, info);
+			glSafeCallVoid(glGetShaderInfoLog(vertex_shader, sizeof(info), NULL, info));
 			printf("Vertex shader compilation failed:\n%s\n", info);
 
-			glDeleteShader(vertex_shader);
+			glSafeCallVoid(glDeleteShader(vertex_shader));
 			return false;
 		}
 
 		// Attaching to program and deleting shader, it's no mode needed
-		glAttachShader(m_program_handle, vertex_shader);
-		glDeleteShader(vertex_shader);
+		glSafeCallVoid(glAttachShader(m_program_handle, vertex_shader));
+		glSafeCallVoid(glDeleteShader(vertex_shader));
 	}
 
 	if (fragment_source)
 	{
 		// All same with the fragment shader
-		GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragment_shader, 1, &fragment_source, nullptr);
-		glCompileShader(fragment_shader);
+		GLuint fragment_shader = glSafeCall(glCreateShader(GL_FRAGMENT_SHADER));
+		glSafeCallVoid(glShaderSource(fragment_shader, 1, &fragment_source, nullptr));
+		glSafeCallVoid(glCompileShader(fragment_shader));
 
-		glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+		glSafeCallVoid(glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success));
 		if (!success)
 		{
-			glGetShaderInfoLog(fragment_shader, sizeof(info), NULL, info);
+			glSafeCallVoid(glGetShaderInfoLog(fragment_shader, sizeof(info), NULL, info));
 			printf("Fragment shader compilation failed:\n%s\n", info);
 
-			glDeleteShader(fragment_shader);
+			glSafeCallVoid(glDeleteShader(fragment_shader));
 			return false;
 		}
 
-		glAttachShader(m_program_handle, fragment_shader);
-		glDeleteShader(fragment_shader);
+		glSafeCallVoid(glAttachShader(m_program_handle, fragment_shader));
+		glSafeCallVoid(glDeleteShader(fragment_shader));
 	}
 
 	// Linking program and checking result
-	glLinkProgram(m_program_handle);
-	glGetProgramiv(m_program_handle, GL_LINK_STATUS, &success);
+	glSafeCallVoid(glLinkProgram(m_program_handle));
+	glSafeCallVoid(glGetProgramiv(m_program_handle, GL_LINK_STATUS, &success));
 	if (!success)
 	{
-		glGetProgramInfoLog(m_program_handle, sizeof(info), nullptr, info);
+		glSafeCallVoid(glGetProgramInfoLog(m_program_handle, sizeof(info), nullptr, info));
 		printf("Shader program linking failed:\n%s\n", info);
 
 		return false;
@@ -175,7 +175,7 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source)
 
 GLint Shader::getUniformLocation(const char* name)
 {
-	GLint location = glGetUniformLocation(m_program_handle, name);
+	GLint location = glSafeCall(glGetUniformLocation(m_program_handle, name));
 	if (location == -1)
 		printf("Uniform '%s' not found in shader\n", name);
 
@@ -186,7 +186,7 @@ GLint Shader::getUniformLocation(const char* name)
 
 void Shader::use()
 {
-	glUseProgram(m_program_handle);
+	glSafeCallVoid(glUseProgram(m_program_handle));
 }
 
 //---------------------------------
@@ -197,8 +197,7 @@ bool Shader::setUniform(const char* name, const glm::mat4& matrix)
 	if (location == -1)
 		return false;
 
-	glProgramUniformMatrix4fv(m_program_handle, location, 1, GL_FALSE, glm::value_ptr(matrix)); 
-	glcheck;
+	glSafeCallVoid(glProgramUniformMatrix4fv(m_program_handle, location, 1, GL_FALSE, glm::value_ptr(matrix))); 
 	return true;
 }
 
@@ -208,8 +207,7 @@ bool Shader::setUniform(const char* name, const glm::vec3& vector)
 	if (location == -1)
 		return false;
 
-	glProgramUniform3f(m_program_handle, location, vector.x, vector.y, vector.z); 
-	glcheck;
+	glSafeCallVoid(glProgramUniform3f(m_program_handle, location, vector.x, vector.y, vector.z)); 
 	return true;
 }
 
@@ -219,8 +217,7 @@ bool Shader::setUniform(const char* name, const glm::vec4& vector)
 	if (location == -1)
 		return false;
 
-	glProgramUniform4f(m_program_handle, location, vector.x, vector.y, vector.z, vector.w); 
-	glcheck;
+	glSafeCallVoid(glProgramUniform4f(m_program_handle, location, vector.x, vector.y, vector.z, vector.w)); 
 	return true;
 }
 
@@ -230,8 +227,7 @@ bool Shader::setUniform(const char* name, const Color& color)
 	if (location == -1)
 		return false;
 
-	glProgramUniform4f(m_program_handle, location, color.r, color.g, color.b, color.a); 
-	glcheck;
+	glSafeCallVoid(glProgramUniform4f(m_program_handle, location, color.r, color.g, color.b, color.a)); 
 	return true;
 }
 
@@ -241,8 +237,7 @@ bool Shader::setUniform(const char* name, int value)
 	if (location == -1)
 		return false;
 
-	glProgramUniform1i(m_program_handle, location, value); 
-	glcheck;
+	glSafeCallVoid(glProgramUniform1i(m_program_handle, location, value)); 
 	return true;
 }
 
@@ -252,8 +247,7 @@ bool Shader::setUniform(const char* name, float value)
 	if (location == -1)
 		return false;
 
-	glProgramUniform1f(m_program_handle, location, value); 
-	glcheck;
+	glSafeCallVoid(glProgramUniform1f(m_program_handle, location, value)); 
 	return true;
 }
 

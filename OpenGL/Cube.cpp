@@ -13,10 +13,10 @@ Cube::Cube():
 
 void Cube::draw(Shader* shader /*= nullptr*/) const
 {
-	glBindVertexArray(m_vertex_array);
+	glSafeCallVoid(glBindVertexArray(m_vertex_array));
 	Primitive::draw(shader);
-	glDrawArrays(GL_TRIANGLES, 0, m_vertex_buffer.getVertexCount());
-	glBindVertexArray(0);
+	glSafeCallVoid(glDrawArrays(GL_TRIANGLES, 0, m_vertex_buffer.getVertexCount()));
+	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------
@@ -78,11 +78,11 @@ void Cube::updateVertexData()
 	m_vertex_buffer.commit();
 	m_vertex_buffer.bind();
 
-	glGenVertexArrays(1, &m_vertex_array);
-	glBindVertexArray(m_vertex_array);
+	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
+	glSafeCallVoid(glBindVertexArray(m_vertex_array));
 	Vertex::InitAttributes();
 	VertexBuffer::Unbind();
-	glBindVertexArray(0);
+	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------

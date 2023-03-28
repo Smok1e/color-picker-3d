@@ -9,14 +9,12 @@ VertexBuffer::VertexBuffer():
 	m_vertex_count(0),
 	m_usage(Usage::StaticDraw)
 {
-	glGenBuffers(1, &m_vbo_handle);
-	glcheck;
+	glSafeCallVoid(glGenBuffers(1, &m_vbo_handle));
 }
 
 VertexBuffer::~VertexBuffer()
 {
-	glDeleteBuffers(1, &m_vbo_handle);
-	glcheck;
+	glSafeCallVoid(glDeleteBuffers(1, &m_vbo_handle));
 }
 
 //---------------------------------
@@ -40,14 +38,12 @@ GLuint VertexBuffer::getNativeHandle() const
 
 void VertexBuffer::bind() const
 {
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo_handle);
-	glcheck;
+	glSafeCallVoid(glBindBuffer(GL_ARRAY_BUFFER, m_vbo_handle));
 }
 
 void VertexBuffer::Unbind()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glcheck;
+	glSafeCallVoid(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
 //---------------------------------
@@ -72,11 +68,10 @@ size_t VertexBuffer::getVertexCount() const
 void VertexBuffer::commit()
 {
 	bind();
-	glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof Vertex, m_vertices.data(), m_usage);
+	glSafeCallVoid(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof Vertex, m_vertices.data(), m_usage));
 	m_vertex_count = m_vertices.size();
 	m_vertices.clear();
 	Unbind();
-	glcheck;
 }
 
 void VertexBuffer::clear()

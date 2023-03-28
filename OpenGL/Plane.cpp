@@ -28,9 +28,9 @@ glm::vec2 Plane::getSize() const
 void Plane::draw(Shader* shader /*= nullptr*/) const
 {
 	Primitive::draw(shader);
-    glBindVertexArray(m_vertex_array);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, m_vertex_buffer.getVertexCount());
-	glBindVertexArray(0);
+    glSafeCallVoid(glBindVertexArray(m_vertex_array));
+	glSafeCallVoid(glDrawArrays(GL_TRIANGLE_STRIP, 0, m_vertex_buffer.getVertexCount()));
+	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------
@@ -77,11 +77,11 @@ void Plane::updateVertexData()
 	m_vertex_buffer.commit();
 	m_vertex_buffer.bind();
 
-	glGenVertexArrays(1, &m_vertex_array);
-	glBindVertexArray(m_vertex_array);
+	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
+	glSafeCallVoid(glBindVertexArray(m_vertex_array));
 	Vertex::InitAttributes();
 	VertexBuffer::Unbind();
-	glBindVertexArray(0);
+	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------

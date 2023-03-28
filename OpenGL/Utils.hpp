@@ -1,10 +1,14 @@
 #pragma once
 
+#ifdef APIENTRY
+	#undef APIENTRY
+#endif
+
+#include <Windows.h>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <cstdio>
 #include <string>
-#include <Windows.h>
 #include <vector>
 
 //-----------------------------------
@@ -14,30 +18,28 @@ constexpr size_t BUFFSIZE = 1024;
 //-----------------------------------
 
 template<typename T>
-T CheckOpenGLCall(T expr_result, const char* expression, const char* file, const char* line);
-
-void CheckOpenGLError(const char* file, const char* func, int line);
+T    CheckOpenGLCall(T expr_result, const char* expression, const char* file, int line);
+void CheckOpenGLCall(               const char* expression, const char* file, int line);
 void GetOpenGLErrorMessage(GLenum code, const char** name, const char** description);
 void glSetEnabled(GLenum index, bool state);
 
 //-----------------------------------
 
 #if defined(_DEBUG) || defined(FORCE_GL_CHECK)
-	// Checks for opengl error
-	#define glcheck CheckOpenGLError(__FILE__, __FUNCSIG__, __LINE__);
-
 	// Checks for opengl error after call of some opengl function
 	#define glSafeCall(expression) CheckOpenGLCall(expression, #expression, __FILE__, __LINE__)
+
+	// Same as glSafeCall but for functions that returns void
+	#define glSafeCallVoid(expression) expression; CheckOpenGLCall(#expression, __FILE__, __LINE__)
 #else
 	// Disabled in release build
-	#define glcheck ;
+	#define glSafeCall(expression) expression
 
 	// Disabled in release build
-	#define glSafeCall(expression) expression
+	#define glSafeCallVoid(expression) expression
 #endif
 
 #define inspect(expression) Inspect(#expression, expression)
-#define glSafeCall(expression) 
 
 //-----------------------------------
 
@@ -76,22 +78,9 @@ T Inspect(const char* expression, const T& value)
 //-----------------------------------
 
 template<typename T>
-T CheckOpenGLCall(T expr_result, const char* expression, const char* file, const char* line)
+T CheckOpenGLCall(T expr_result, const char* expression, const char* file, int line)
 {
-	GLenum code = glGetError();
-	if (code != GL_NO_ERROR)
-	{
-		const char* name = nullptr;
-		const char* description = nullptr;
-		GetOpenGLErrorMessage(code, &name, &description);
-
-		static char buffer[BUFFSIZE] = "";
-		sprintf_s(buffer, "Expression '%s' (at line #%d in file %s) caused OpenGL error: %s\n", expression, line, file, name);
-		fprintf(stderr, buffer);
-		
-		MessageBoxA(nullptr, buffer, "OpenGL expression error", MB_ICONERROR | MB_OK);
-	}
-
+	CheckOpenGLCall(expression, file, line);
 	return expr_result;
 }
 

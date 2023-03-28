@@ -1,4 +1,5 @@
 #include "Vertex.hpp"
+#include "Utils.hpp"
 
 //---------------------------------
 
@@ -37,24 +38,24 @@ Vertex::Vertex(
 void Vertex::InitAttributes()
 {
 	// Position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, nullptr);
-	glEnableVertexAttribArray(0);
+	glSafeCallVoid(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, nullptr));
+	glSafeCallVoid(glEnableVertexAttribArray(0));
 
 	// UV
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, texcoord)));
-	glEnableVertexAttribArray(1);
+	glSafeCallVoid(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, texcoord))));
+	glSafeCallVoid(glEnableVertexAttribArray(1));
 
 	// Normal
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, normal)));
-	glEnableVertexAttribArray(2);
+	glSafeCallVoid(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, normal))));
+	glSafeCallVoid(glEnableVertexAttribArray(2));
 
 	// Tangent
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, tangent)));
-	glEnableVertexAttribArray(3);
+	glSafeCallVoid(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, tangent))));
+	glSafeCallVoid(glEnableVertexAttribArray(3));
 
 	// Bitangent
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, bitangent)));
-	glEnableVertexAttribArray(4);
+	glSafeCallVoid(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, reinterpret_cast<void*>(offsetof(Vertex, bitangent))));
+	glSafeCallVoid(glEnableVertexAttribArray(4));
 }
 
 //---------------------------------

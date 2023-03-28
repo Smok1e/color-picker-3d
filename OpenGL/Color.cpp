@@ -1,5 +1,7 @@
-#include "Color.hpp"
 #include <cstring>
+
+#include "Color.hpp"
+#include "Utils.hpp"
 
 //-----------------------------------
 
@@ -108,7 +110,7 @@ const Color Color::Blue       (0.f, 0.f, 1.f     );
 
 void glClearColor(const Color& color)
 {
-	glClearColor(color.r, color.g, color.b, color.a);
+	glSafeCallVoid(glClearColor(color.r, color.g, color.b, color.a));
 }
 
 //-----------------------------------

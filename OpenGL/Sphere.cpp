@@ -20,13 +20,13 @@ Sphere::Sphere():
 void Sphere::draw(Shader* shader /*= nullptr*/) const
 {
 	Primitive::draw(shader);
-    glBindVertexArray(m_vertex_array);
-    glEnable(GL_PRIMITIVE_RESTART);
-    glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer);
-    glDrawElements(GL_QUAD_STRIP, m_index_count, GL_UNSIGNED_INT, NULL);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+    glSafeCallVoid(glBindVertexArray(m_vertex_array));
+    glSafeCallVoid(glEnable(GL_PRIMITIVE_RESTART));
+    glSafeCallVoid(glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX));
+    glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer));
+    glSafeCallVoid(glDrawElements(GL_QUAD_STRIP, m_index_count, GL_UNSIGNED_INT, NULL));
+	glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------
@@ -67,7 +67,7 @@ size_t Sphere::getLongitudePointCount() const
 void Sphere::cleanup()
 {
 	Primitive::cleanup();
-	if (m_index_buffer) glDeleteBuffers(1, &m_index_buffer);
+	if (m_index_buffer) glSafeCallVoid(glDeleteBuffers(1, &m_index_buffer));
 	m_index_buffer = 0;
 }
 
@@ -117,15 +117,15 @@ void Sphere::updateVertexData()
 	m_vertex_buffer.commit();
 	m_vertex_buffer.bind();
 
-	glGenVertexArrays(1, &m_vertex_array);
-	glBindVertexArray(m_vertex_array);
+	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
+	glSafeCallVoid(glBindVertexArray(m_vertex_array));
 	Vertex::InitAttributes();
 	VertexBuffer::Unbind();
-	glBindVertexArray(0);
+	glSafeCallVoid(glBindVertexArray(0));
 
-    glGenBuffers(1, &m_index_buffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);	
+    glSafeCallVoid(glGenBuffers(1, &m_index_buffer));
+    glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer));
+    glSafeCallVoid(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW));	
 	m_index_count = indices.size();
 }
 

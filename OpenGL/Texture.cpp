@@ -1,5 +1,7 @@
-#include "Texture.hpp"
 #include <SOIL/SOIL.h>
+
+#include "Texture.hpp"
+#include "Utils.hpp"
 
 //---------------------------------
 
@@ -10,7 +12,7 @@ Texture::Texture():
 
 Texture::~Texture()
 {
-	if (m_texture_handle) glDeleteTextures(1, &m_texture_handle);
+	if (m_texture_handle) glSafeCallVoid(glDeleteTextures(1, &m_texture_handle));
 }
 
 //---------------------------------
@@ -18,7 +20,7 @@ Texture::~Texture()
 bool Texture::loadFromFile(const std::filesystem::path& filename)
 {
 	// Deleting previously generated texture
-	if (m_texture_handle) glDeleteTextures(1, &m_texture_handle);
+	if (m_texture_handle) glSafeCallVoid(glDeleteTextures(1, &m_texture_handle));
 
 	// Loading image
 	int size_x = 0;
@@ -31,7 +33,7 @@ bool Texture::loadFromFile(const std::filesystem::path& filename)
 	}
 
 	// Generating texture
-	glGenTextures(1, &m_texture_handle);
+	glSafeCallVoid(glGenTextures(1, &m_texture_handle));
 	if (!m_texture_handle)
 	{
 		printf("Failed to generate texture");
@@ -40,8 +42,8 @@ bool Texture::loadFromFile(const std::filesystem::path& filename)
 
 	// Copying image data into texture video memory
 	bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_x, size_y, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	glSafeCallVoid(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_x, size_y, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data));
+	glSafeCallVoid(glGenerateMipmap(GL_TEXTURE_2D));
 
 	// Deleting image data
 	SOIL_free_image_data(texture_data);
@@ -60,22 +62,22 @@ glm::u32vec2 Texture::getSize() const
 {
 	GLint size_x = 0;
 	GLint size_y = 0;
-	glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_WIDTH, &size_x);
-	glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_HEIGHT, &size_y);
+	glSafeCallVoid(glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_WIDTH, &size_x));
+	glSafeCallVoid(glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_HEIGHT, &size_y));
 	return glm::u32vec2(size_x, size_y);
 }
 
 unsigned Texture::getSizeX() const
 {
 	GLint size_x = 0;
-	glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_WIDTH, &size_x);
+	glSafeCallVoid(glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_WIDTH, &size_x));
 	return size_x;
 }
 
 unsigned Texture::getSizeY() const
 {
 	GLint size_y = 0;
-	glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_HEIGHT, &size_y);
+	glSafeCallVoid(glGetTextureLevelParameteriv(m_texture_handle, 0, GL_TEXTURE_HEIGHT, &size_y));
 	return size_y;
 }
 
@@ -88,34 +90,34 @@ float Texture::getRatio() const
 
 void Texture::bind() const
 {
-	glBindTexture(GL_TEXTURE_2D, m_texture_handle);
+	glSafeCallVoid(glBindTexture(GL_TEXTURE_2D, m_texture_handle));
 }
 
 void Texture::setActive() const
 {
-	glActiveTexture(GL_TEXTURE0 + static_cast<int>(m_id));
+	glSafeCallVoid(glActiveTexture(GL_TEXTURE0 + static_cast<int>(m_id)));
 }
 
 //---------------------------------
 
 void Texture::setParameter(GLenum name, GLfloat parameter)
 {
-	glTextureParameterf(m_texture_handle, name, parameter);
+	glSafeCallVoid(glTextureParameterf(m_texture_handle, name, parameter));
 }
 
 void Texture::setParameter(GLenum name, const GLfloat* parameters)
 {
-	glTextureParameterfv(m_texture_handle, name, parameters);
+	glSafeCallVoid(glTextureParameterfv(m_texture_handle, name, parameters));
 }
 
 void Texture::setParameter(GLenum name, GLint parameter)
 {
-	glTextureParameteri(m_texture_handle, name, parameter);
+	glSafeCallVoid(glTextureParameteri(m_texture_handle, name, parameter));
 }
 
 void Texture::setParameter(GLenum name, const GLint* parameters)
 {
-	glTextureParameteriv(m_texture_handle, name, parameters);
+	glSafeCallVoid(glTextureParameteriv(m_texture_handle, name, parameters));
 }
 
 //---------------------------------

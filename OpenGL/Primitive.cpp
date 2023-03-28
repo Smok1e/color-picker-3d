@@ -119,13 +119,12 @@ void Primitive::updateTransform()
 
 void Primitive::cleanup()
 {
-	if (m_vertex_array) glDeleteVertexArrays(1, &m_vertex_array);
+	if (m_vertex_array) glSafeCallVoid(glDeleteVertexArrays(1, &m_vertex_array));
 	m_vertex_array = 0;
 }
 
 void Primitive::bindShader(Shader& shader) const
 {
-	glcheck;
 	shader["shapeOffset"   ] = m_position;
 	shader["shapeColor"    ] = m_color;
 	shader["shapeScale"    ] = m_scale;

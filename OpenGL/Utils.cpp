@@ -6,7 +6,7 @@
 
 //-----------------------------------
 
-void CheckOpenGLError(const char* file, const char* func, int line)
+void CheckOpenGLCall(const char* expression, const char* file, int line)
 {
 	GLenum code = glGetError();
 	if (code != GL_NO_ERROR)
@@ -14,27 +14,14 @@ void CheckOpenGLError(const char* file, const char* func, int line)
 		const char* name = nullptr;
 		const char* description = nullptr;
 		GetOpenGLErrorMessage(code, &name, &description);
-		fprintf(stderr, "OpenGL error detected in function %s at line #%d: %s (0x%04X)\n%s\n", func, line, name, code, description);
 
-		char text[2048] = "";
-		sprintf_s(
-			text,					   
-			"OpenGL error: %s (0x%04X)\n"
-			"Detected in:\n"
-			"File: %s\n"
-			"Function: %s\n"
-			"Line #%d\n"
-			"\n"
-			"%s",
-			name,
-			code,
-			file,
-			func,
-			line,
-			description
-		);
+		fprintf(stderr, "Expression '%s' (at line #%d in file %s) caused OpenGL error: %s\n", expression, line, file, name);
 
-		MessageBoxA(nullptr, text, "Error", MB_ICONERROR | MB_OK);
+		static char buffer[BUFFSIZE] = "";
+		sprintf_s(buffer, "Expression '%s' (at line #%d in file %s) caused OpenGL error: %s\n\nPress [YES] to debug break", expression, line, file, name);
+		
+		if (MessageBoxA(nullptr, buffer, "OpenGL expression error", MB_ICONERROR | MB_YESNO) == IDYES)
+			DebugBreak();
 	}
 }
 
