@@ -73,14 +73,9 @@ void Cone::calculateVertices()
 		double alpha = M_PI*2*t_current;
 		double beta  = M_PI*2*t_next;
 
-		glm::vec3 a(cos(alpha)*m_radius, -0.5*m_height, sin(alpha)*m_radius);
-		glm::vec3 b(cos(beta )*m_radius, -0.5*m_height, sin(beta )*m_radius);
-
-		glm::vec3 normal = glm::normalize(glm::cross(b-top, a-top));
-
-		m_vertex_buffer += Vertex(a,   glm::vec2(t_current,                        1), normal);
-		m_vertex_buffer += Vertex(b,   glm::vec2(t_next,                           1), normal);
-		m_vertex_buffer += Vertex(top, glm::vec2(t_current+(t_next-t_current)*0.5, 0), normal);
+		m_vertex_buffer += Vertex(glm::vec3(cos(alpha)*m_radius, -0.5*m_height, sin(alpha)*m_radius), glm::vec2(t_current, 1));
+		m_vertex_buffer += Vertex(top, glm::vec2(t_current+(t_next-t_current)*0.5, 0));
+		m_vertex_buffer += Vertex(glm::vec3(cos(beta )*m_radius, -0.5*m_height, sin(beta )*m_radius), glm::vec2(t_next,    1));
 	}
 
 	m_vertex_buffer.commit();

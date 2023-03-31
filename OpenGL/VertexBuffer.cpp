@@ -1,5 +1,6 @@
 #include "VertexBuffer.hpp"
 #include "Utils.hpp"
+#include "Logging.hpp"
 
 //---------------------------------
 
@@ -65,18 +66,59 @@ size_t VertexBuffer::getVertexCount() const
 	return m_vertex_count;
 }
 
-void VertexBuffer::commit()
+void VertexBuffer::commit(bool calculate_normals /*= true*/)
 {
 	bind();
+	if (calculate_normals) calculateNormals();
 	glSafeCallVoid(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof Vertex, m_vertices.data(), static_cast<GLenum>(m_usage)));
 	m_vertex_count = m_vertices.size();
-	m_vertices.clear();
+	clear();
 	Unbind();
 }
 
 void VertexBuffer::clear()
 {
 	m_vertices.clear();
+}
+
+//---------------------------------
+
+void VertexBuffer::calculateNormals()
+{
+	for (size_t i = 0, count = size()/3; i < count; i++)
+	{
+		iterator face = begin()+i*3;
+		glm::vec3 edge1 = face[1].position-face[0].position;
+		glm::vec3 edge2 = face[2].position-face[0].position;
+		face[0].normal = face[1].normal = face[2].normal = glm::normalize(glm::cross(edge1, edge2));
+	}
+}
+
+//---------------------------------
+
+size_t VertexBuffer::size() const
+{
+	return m_vertices.size();
+}
+
+VertexBuffer::iterator VertexBuffer::begin()
+{
+	return m_vertices.begin();
+}
+
+VertexBuffer::iterator VertexBuffer::end()
+{
+	return m_vertices.end();
+}
+
+VertexBuffer::const_iterator VertexBuffer::begin() const
+{
+	return m_vertices.begin();
+}
+
+VertexBuffer::const_iterator VertexBuffer::end() const
+{
+	return m_vertices.end();
 }
 
 //---------------------------------

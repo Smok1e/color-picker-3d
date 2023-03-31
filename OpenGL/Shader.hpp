@@ -74,6 +74,7 @@ public:
 	Shader& operator=(const Shader& that) = delete; // Copying not allowed, di nah cerf
 
 	// Uniforms
+	bool setUniform(const char* name, const glm::mat3& matrix);
 	bool setUniform(const char* name, const glm::mat4& matrix);
 	bool setUniform(const char* name, const glm::vec3& vector);
 	bool setUniform(const char* name, const glm::vec4& vector);

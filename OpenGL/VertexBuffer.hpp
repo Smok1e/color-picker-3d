@@ -9,6 +9,9 @@
 class VertexBuffer
 {
 public:
+	typedef std::vector<Vertex>::iterator iterator;
+	typedef std::vector<Vertex>::const_iterator const_iterator;
+
 	enum class Usage {
 		StreamDraw  = GL_STREAM_DRAW,  // Use StreamDraw if the data will be modified and used few times
 		StaticDraw  = GL_STATIC_DRAW,  // Use StaticDraw if the data will be modified rarely and often used
@@ -39,10 +42,20 @@ public:
 	size_t getVertexCount() const;
 
 	// Transfers the data stored in memory into video memory
-	void commit();
+	void commit(bool calculate_normals = true);
 
 	// Clears the data currently stored in memory
 	void clear();
+
+	// Calculates normals for each triangle that buffer contains
+	void calculateNormals();
+
+	// Container interface
+	size_t size() const;
+	iterator begin();
+	iterator end();
+	const_iterator begin() const;
+	const_iterator end() const;
 
 protected:
 	GLuint m_vbo_handle;

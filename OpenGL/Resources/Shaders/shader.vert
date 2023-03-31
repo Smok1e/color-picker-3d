@@ -13,6 +13,7 @@ layout(location=2) in vec3 vertex_Normal;
 //--------------------------------- Uniforms
 
 uniform mat4 model;
+uniform mat3 modelNormalMatrix;
 uniform mat4 view;
 uniform mat4 projection;
 
@@ -33,7 +34,7 @@ void main()
     // Passing values to geometry shader
     geometry_Model = model;
     geometry_Position = vertex_Position;
-    geometry_Normal  = normalize((inverse(model)*vec4(vertex_Normal, 1.f)).xyz);
+    geometry_Normal = modelNormalMatrix*vertex_Normal;
     geometry_TexCoord = vertex_TexCoord;
 }
 

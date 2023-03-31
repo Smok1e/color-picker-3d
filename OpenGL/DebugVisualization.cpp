@@ -28,11 +28,11 @@ void DrawVector(Shader* shader, glm::vec3 position, glm::vec3 vector, Color colo
 
 	glm::vec3 direction = glm::normalize(vector);
 	cylinder.setColor(color);
-	cylinder.setDirection(direction);
+	cylinder.setRotation(direction);
 	cylinder.setPosition(position+direction*length*.5f);
 
 	cone.setColor(color);
-	cone.setDirection(direction);
+	cone.setRotation(direction);
 	cone.setPosition(position+direction*length);
 
 	cylinder.draw(shader);

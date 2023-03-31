@@ -69,7 +69,7 @@ glm::vec3 Camera::getVelocity() const
 
 //-----------------------------------
 
-void Camera::setDirection(const glm::vec2& rotation)
+void Camera::setRotation(const glm::vec2& rotation)
 {
 	if (rotation != m_rotation)
 	{
@@ -81,10 +81,10 @@ void Camera::setDirection(const glm::vec2& rotation)
 
 void Camera::addRotation(const glm::vec2& rotation)
 {
-	setDirection(m_rotation+rotation);
+	setRotation(m_rotation+rotation);
 }
 
-glm::vec2 Camera::getDirection() const
+glm::vec2 Camera::getRotation() const
 {
 	return m_rotation;
 }

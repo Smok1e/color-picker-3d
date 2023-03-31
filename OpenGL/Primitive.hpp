@@ -21,8 +21,8 @@ public:
 	virtual void setScale(const glm::vec3& scale);
 	virtual glm::vec3 getScale() const;
 
-	virtual void setDirection(const glm::vec3& direction);
-	virtual glm::vec3 getDirection() const;
+	virtual void setRotation(const glm::vec3& rotation);
+	virtual glm::vec3 getRotation() const;
 
 	virtual void setColor(const Color& color);
 	virtual Color getColor() const;
@@ -35,9 +35,6 @@ public:
 
 	virtual void setLightningEnabled(bool enable);
 	virtual bool getLightningEnabled() const;
-
-	virtual void setShaderNormalCalculationEnabled(bool enable);
-	virtual bool getShaderNormalCalculationEnabled() const;
 
 protected:
 	virtual void cleanup();
@@ -54,12 +51,12 @@ protected:
 
 	glm::vec3 m_position;
 	glm::vec3 m_scale;
-	glm::vec3 m_direction;
+	glm::vec3 m_rotation;
 	glm::mat4 m_model;
+	glm::mat3 m_normal_matrix;
 
 	Color m_color;
 	bool m_use_lightning;
-	bool m_use_normal_calculation;
 
 };
 

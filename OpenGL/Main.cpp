@@ -181,8 +181,7 @@ int main()
 	normalmap.setID(Texture::ID::NormalMap);
 	normalmap.setFilters(Texture::Filter::NearestNeightbour);
 
-	auto object = scene += new Cone;
-	object->setPointCount(32);
+	auto object = scene += new Plane;
 	object->setColor(Color::White);
 	//object->setTexture(&texture);
 	//object->setNormalMap(&normalmap);
@@ -210,17 +209,16 @@ int main()
 	light2_shape->setColor(light2->getColor());
 	light2_shape->setPosition(light2->getPosition());
 
-	double object_rotation_angle = 0;
+	glm::vec3 object_rotation_angle(0, 0, 0);
 	while (!glfwWindowShouldClose(window))
 	{
 		DoControl(window);
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_angle += 0.01;
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_angle -= 0.01;
-		object->setDirection(glm::vec3(0, sin(object_rotation_angle), cos(object_rotation_angle)));
-
-		for (auto& object: scene)
-			object->setShaderNormalCalculationEnabled(window_data.normal_calculation);
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_angle.y += 0.01;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_angle.y -= 0.01;
+		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_angle.xqq += 0.01;
+		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) object_rotation_angle.x -= 0.01;
+		object->setRotation(object_rotation_angle);
 
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) object->setPosition(object->getPosition()+glm::vec3(0.01, 0, 0));
 		if (glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS) object->setPosition(object->getPosition()-glm::vec3(0.01, 0, 0));

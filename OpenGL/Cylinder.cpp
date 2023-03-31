@@ -75,15 +75,13 @@ void Cylinder::calculateVertices()
 		glm::vec3 c = a - glm::vec3(0, m_height, 0);
 		glm::vec3 d = b - glm::vec3(0, m_height, 0);
 
-		glm::vec3 normal = glm::normalize(glm::cross(b-a, c-a));
+		m_vertex_buffer += Vertex(a, glm::vec2(t_current, 0));
+		m_vertex_buffer += Vertex(b, glm::vec2(t_next,    0));
+		m_vertex_buffer += Vertex(c, glm::vec2(t_current, 1));
 
-		m_vertex_buffer += Vertex(a, glm::vec2(t_current, 0), normal);
-		m_vertex_buffer += Vertex(b, glm::vec2(t_next,    0), normal);
-		m_vertex_buffer += Vertex(c, glm::vec2(t_current, 1), normal);
-
-		m_vertex_buffer += Vertex(b, glm::vec2(t_next,    0), normal);
-		m_vertex_buffer += Vertex(c, glm::vec2(t_current, 1), normal);
-		m_vertex_buffer += Vertex(d, glm::vec2(t_next,    1), normal);
+		m_vertex_buffer += Vertex(b, glm::vec2(t_next,    0));
+		m_vertex_buffer += Vertex(d, glm::vec2(t_next,    1));
+		m_vertex_buffer += Vertex(c, glm::vec2(t_current, 1));
 	}
 
 	m_vertex_buffer.commit();

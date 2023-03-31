@@ -13,13 +13,12 @@ Primitive::Primitive():
 	m_vertex_array(0),
 	m_position(0),
 	m_scale(glm::vec3(1, 1, 1)),
-	m_direction(0),
+	m_rotation(0),
 	m_model(glm::identity<glm::mat4>()),
 	m_color(),
 	m_texture(nullptr),
 	m_normalmap(nullptr),
-	m_use_lightning(true),
-	m_use_normal_calculation(false)
+	m_use_lightning(true)
 {
 	updateTransform();
 }
@@ -63,15 +62,15 @@ glm::vec3 Primitive::getScale() const
 	return m_scale;
 }
 
-void Primitive::setDirection(const glm::vec3& direction)
+void Primitive::setRotation(const glm::vec3& rotation)
 {
-	if (m_direction != direction)
-		m_direction = direction, updateTransform();
+	if (m_rotation != rotation)
+		m_rotation = rotation, updateTransform();
 }
 
-glm::vec3 Primitive::getDirection() const
+glm::vec3 Primitive::getRotation() const
 {
-	return m_direction;
+	return m_rotation;
 }
 
 void Primitive::setColor(const Color& color)
@@ -114,24 +113,25 @@ bool Primitive::getLightningEnabled() const
 	return m_use_lightning;
 }
 
-void Primitive::setShaderNormalCalculationEnabled(bool enable)
-{
-	m_use_normal_calculation = enable;
-}
-
-bool Primitive::getShaderNormalCalculationEnabled() const
-{
-	return m_use_normal_calculation;
-}
-
 //---------------------------------
 
 void Primitive::updateTransform()
 {
 	m_model = glm::identity<glm::mat4>();
+
+	// Position
 	m_model = glm::translate(m_model, m_position);
-	//m_model = glm::rotate(m_model, glm::pi<float>(), m_direction+glm::vec3(0, 2, 0));
+
+	// Rotation
+	m_model = glm::rotate(m_model, m_rotation.x, glm::vec3(1, 0, 0));
+	m_model = glm::rotate(m_model, m_rotation.y, glm::vec3(0, 1, 0));
+	m_model = glm::rotate(m_model, m_rotation.z, glm::vec3(0, 0, 1));
+
+	// Scale
 	m_model = glm::scale(m_model, m_scale);
+
+	// Inverted and transposed matrix for normal calculation
+	m_normal_matrix = glm::transpose(glm::inverse(glm::mat3(m_model)));
 }
 
 void Primitive::updateVertexData()
@@ -156,12 +156,12 @@ void Primitive::cleanup()
 
 void Primitive::bindShader(Shader& shader) const
 {
-	shader["model"                    ] = m_model;
-	shader["modelColor"               ] = m_color;
-	shader["modelUseTexture"          ] = m_texture   != nullptr;
-	shader["modelUseNormalMap"        ] = m_normalmap != nullptr;
-	shader["modelUseLightning"        ] = m_use_lightning;
-	shader["modelUseNormalCalculation"] = m_use_normal_calculation;
+	shader["model"            ] = m_model;
+	shader["modelNormalMatrix"] = m_normal_matrix;
+	shader["modelColor"       ] = m_color;
+	shader["modelUseTexture"  ] = m_texture   != nullptr;
+	shader["modelUseNormalMap"] = m_normalmap != nullptr;
+	shader["modelUseLightning"] = m_use_lightning;
 
 	if (m_texture  ) shader.setUniform("modelTexture",   *m_texture  );
 	if (m_normalmap) shader.setUniform("modelNormalMap", *m_normalmap);

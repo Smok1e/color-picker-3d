@@ -21,9 +21,9 @@ public:
 	void addVelocity(const glm::vec3& velocity);
 	glm::vec3 getVelocity() const;									  
 
-	void setDirection(const glm::vec2& rotation);
+	void setRotation(const glm::vec2& rotation);
 	void addRotation(const glm::vec2& rotation);
-	glm::vec2 getDirection() const;
+	glm::vec2 getRotation() const;
 
 	void setVelocityDampling(float dampling);
 	float getVelocityDampling() const;

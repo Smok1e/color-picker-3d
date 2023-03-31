@@ -112,7 +112,8 @@ void Sphere::calculateVertices()
         m_indices.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
 	}
 
-	m_vertex_buffer.commit();
+	// Do not calculate vertices automatically
+	m_vertex_buffer.commit(false);
 }
 
 void Sphere::updateVertexData()

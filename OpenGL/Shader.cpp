@@ -236,6 +236,16 @@ void Shader::use()
 
 //---------------------------------
 
+bool Shader::setUniform(const char* name, const glm::mat3& matrix)
+{
+	GLint location = getUniformLocation(name);
+	if (location == -1)
+		return false;
+
+	glSafeCallVoid(glProgramUniformMatrix3fv(m_program_handle, location, 1, GL_FALSE, glm::value_ptr(matrix)));
+	return true;
+}
+
 bool Shader::setUniform(const char* name, const glm::mat4& matrix)
 {
 	GLint location = getUniformLocation(name);
