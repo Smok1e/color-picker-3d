@@ -33,6 +33,9 @@ public:
 	virtual void setNormalMap(Texture* normalmap);
 	virtual Texture* getNormalMap() const;
 
+	virtual void setSpecularMap(Texture* specmap);
+	virtual Texture* getSpecularMap() const;
+
 	virtual void setLightningEnabled(bool enable);
 	virtual bool getLightningEnabled() const;
 
@@ -48,6 +51,7 @@ protected:
 
 	Texture* m_texture;
 	Texture* m_normalmap;
+	Texture* m_specmap;
 
 	glm::vec3 m_position;
 	glm::vec3 m_scale;

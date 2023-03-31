@@ -79,7 +79,7 @@ void Cleanup();
 
 int main()
 {
-	SetLoggingLevel(LoggingLevel::Error);
+	SetLoggingLevel(LoggingLevel::Info);
 
 	LogInfo("Initializing GLFW");
 	if (!glfwInit())
@@ -172,24 +172,32 @@ int main()
 	glfwSetWindowUserPointer(window, &window_data);
 
 	Texture texture;
-	texture.loadFromFile("Resources/Textures/rock/base.png");
+	texture.loadFromFile("Resources/Textures/diamond_ore/base.png");
 	texture.setID(Texture::ID::BaseColor);
 	texture.setFilters(Texture::Filter::NearestNeightbour);
 
 	Texture normalmap;
-	normalmap.loadFromFile("Resources/Textures/rock/normal.png");
+	normalmap.loadFromFile("Resources/Textures/diamond_ore/normal.png");
 	normalmap.setID(Texture::ID::NormalMap);
 	normalmap.setFilters(Texture::Filter::NearestNeightbour);
 
-	auto object = scene += new Plane;
+	Texture specularmap;
+	specularmap.loadFromFile("Resources/Textures/diamond_ore/specular.png");
+	specularmap.setID(Texture::ID::SpecularMap);
+	specularmap.setFilters(Texture::Filter::NearestNeightbour);
+
+	auto object = scene += new Sphere;
 	object->setColor(Color::White);
-	//object->setTexture(&texture);
-	//object->setNormalMap(&normalmap);
+	object->setTexture(&texture);
+	object->setNormalMap(&normalmap);
+	object->setSpecularMap(&specularmap);
 
 	auto light1 = scene += new Light;
 	light1->setColor("#FFF7C9");
-	//light1->setSpecularStrength(0);
 	light1->setPosition(glm::vec3(-.5f, 0, 1));
+	light1->setAmbientStrength(0);
+	light1->setDiffuseStrength(0.2);
+	light1->setSpecularStrength(1);
 
 	auto light1_shape = scene += new Sphere;
 	light1_shape->setLightningEnabled(false);
@@ -201,7 +209,9 @@ int main()
 	auto light2 = scene += new Light;
 	light2->setColor("#33A7FF");
 	light2->setPosition(glm::vec3(.5f, 0, 1));
+	light2->setDiffuseStrength(0.2);
 	light2->setAmbientStrength(0);
+	light2->setSpecularStrength(1);
 	
 	auto light2_shape = scene += new Cube;
 	light2_shape->setLightningEnabled(false);
@@ -214,10 +224,10 @@ int main()
 	{
 		DoControl(window);
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_angle.y += 0.01;
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_angle.y -= 0.01;
-		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_angle.x += 0.01;
-		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) object_rotation_angle.x -= 0.01;
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_angle.y += 0.01f;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_angle.y -= 0.01f;
+		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_angle.x += 0.01f;
+		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) object_rotation_angle.x -= 0.01f;
 		object->setRotation(object_rotation_angle);
 
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) object->setPosition(object->getPosition()+glm::vec3(0.01, 0, 0));

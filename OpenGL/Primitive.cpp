@@ -103,6 +103,16 @@ Texture* Primitive::getNormalMap() const
 	return m_normalmap;
 }
 
+void Primitive::setSpecularMap(Texture* specmap)
+{
+	m_specmap = specmap;
+}
+
+Texture* Primitive::getSpecularMap() const
+{
+	return m_specmap;
+}
+
 void Primitive::setLightningEnabled(bool enable)
 {
 	m_use_lightning = enable;
@@ -156,15 +166,17 @@ void Primitive::cleanup()
 
 void Primitive::bindShader(Shader& shader) const
 {
-	shader["model"            ] = m_model;
-	shader["modelNormalMatrix"] = m_normal_matrix;
-	shader["modelColor"       ] = m_color;
-	shader["modelUseTexture"  ] = m_texture   != nullptr;
-	shader["modelUseNormalMap"] = m_normalmap != nullptr;
-	shader["modelUseLightning"] = m_use_lightning;
+	shader["model"              ] = m_model;
+	shader["modelNormalMatrix"  ] = m_normal_matrix;
+	shader["modelColor"         ] = m_color;
+	shader["modelUseTexture"    ] = m_texture   != nullptr;
+	shader["modelUseNormalMap"  ] = m_normalmap != nullptr;
+	shader["modelUseSpecularMap"] = m_specmap   != nullptr;
+	shader["modelUseLightning"  ] = m_use_lightning;
 
-	if (m_texture  ) shader.setUniform("modelTexture",   *m_texture  );
-	if (m_normalmap) shader.setUniform("modelNormalMap", *m_normalmap);
+	if (m_texture  ) shader.setUniform("modelTexture",     *m_texture  );
+	if (m_normalmap) shader.setUniform("modelNormalMap",   *m_normalmap);
+	if (m_specmap  ) shader.setUniform("modelSpecularMap", *m_specmap  );
 	shader.use();
 }
 

@@ -138,7 +138,8 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 	m_program_handle = glSafeCall(glCreateProgram());
 
 	static GLchar info[512] = "";
-	static GLint  success = 0;
+	static GLint  success   = 0;
+	static GLint  loglen    = 0;
 
 	if (vertex_source)
 	{
@@ -148,13 +149,19 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 		glSafeCallVoid(glCompileShader(vertex_shader));
 
 		glSafeCallVoid(glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success));
-		if (!success)
+		glSafeCallVoid(glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &loglen));
+		if (loglen > 1)
 		{
 			glSafeCallVoid(glGetShaderInfoLog(vertex_shader, sizeof(info), NULL, info));
-			LogError("Vertex shader compilation failed:\n%s\n", info);
 
-			glSafeCallVoid(glDeleteShader(vertex_shader));
-			return false;
+			if (!success)
+			{
+				LogError("Vertex shader compilation failed:\n%s\n", info);
+				glSafeCallVoid(glDeleteShader(vertex_shader));
+				return false;
+			}
+
+			LogWarning("Vertex shader compilation log:\n%s\n", info);
 		}
 
 		// Attaching to program and deleting shader, it's no mode needed
@@ -170,13 +177,19 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 		glSafeCallVoid(glCompileShader(fragment_shader));
 
 		glSafeCallVoid(glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success));
-		if (!success)
+		glSafeCallVoid(glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &loglen));
+		if (loglen > 1)
 		{
 			glSafeCallVoid(glGetShaderInfoLog(fragment_shader, sizeof(info), NULL, info));
-			LogError("Fragment shader compilation failed:\n%s\n", info);
 
-			glSafeCallVoid(glDeleteShader(fragment_shader));
-			return false;
+			if (!success)
+			{
+				LogError("Fragment shader compilation failed:\n%s\n", info);
+				glSafeCallVoid(glDeleteShader(fragment_shader));
+				return false;
+			}
+
+			LogWarning("Fragment shader compilation log:\n%s\n", info);
 		}
 
 		glSafeCallVoid(glAttachShader(m_program_handle, fragment_shader));
@@ -191,13 +204,19 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 		glSafeCallVoid(glCompileShader(geometry_shader));
 
 		glSafeCallVoid(glGetShaderiv(geometry_shader, GL_COMPILE_STATUS, &success));
-		if (!success)
+		glSafeCallVoid(glGetShaderiv(geometry_shader, GL_INFO_LOG_LENGTH, &loglen));
+		if (loglen > 1)
 		{
 			glSafeCallVoid(glGetShaderInfoLog(geometry_shader, sizeof(info), NULL, info));
-			LogError("Geometry shader compilation failed:\n%s\n", info);
 
-			glSafeCallVoid(glDeleteShader(geometry_shader));
-			return false;
+			if (!success)
+			{
+				LogError("Geometry shader compilation failed:\n%s\n", info);
+				glSafeCallVoid(glDeleteShader(geometry_shader));
+				return false;
+			}
+
+			LogWarning("Geometry shader compilation log:\n%s\n", info);
 		}
 
 		glSafeCallVoid(glAttachShader(m_program_handle, geometry_shader));
@@ -210,7 +229,7 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 	if (!success)
 	{
 		glSafeCallVoid(glGetProgramInfoLog(m_program_handle, sizeof(info), nullptr, info));
-		LogError("Shader program linking failed:\n%s\n", info);
+		LogError("Shader program linkage failed:\n%s\n", info);
 
 		return false;
 	}

@@ -12,7 +12,8 @@ class Texture
 public:
 	enum class ID {
 		BaseColor,
-		NormalMap
+		NormalMap,
+		SpecularMap
 	};
 
 	enum class Filter {

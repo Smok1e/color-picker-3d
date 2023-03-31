@@ -19,8 +19,7 @@ public:
 		const glm::vec3& position, 
 		const glm::vec2& texcoord  = glm::vec2(0), 
 		const glm::vec3& normal    = glm::vec3(0), 
-		const glm::vec3& tangent   = glm::vec3(0),
-		const glm::vec3& bitangent = glm::vec3(0)
+		const glm::vec3& tangent   = glm::vec3(0)
 	);
 
 	static void InitAttributes();
@@ -29,7 +28,6 @@ public:
 	glm::vec2 texcoord;
 	glm::vec3 normal;
 	glm::vec3 tangent;
-	glm::vec3 bitangent;
 
 	constexpr float& operator[](size_t index) {
 		return position[index];
