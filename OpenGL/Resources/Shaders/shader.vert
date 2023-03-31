@@ -1,50 +1,40 @@
+// Vertex shader
 #version 450 core
 
-//---------------------------------
+//--------------------------------- Input
 
-layout(location = 0) in vec3 position;
-layout(location = 1) in vec2 texcoord;
-layout(location = 2) in vec3 normal;
-layout(location = 3) in vec3 tangent;
-layout(location = 4) in vec3 bitangent;
+layout(location=0) in vec3 vertex_Position;
+layout(location=1) in vec2 vertex_TexCoord;
+layout(location=2) in vec3 vertex_Normal;
 
-uniform mat4 projection;
+//layout(location=3) in vec3 vertex_Tangent;
+//layout(location=4) in vec3 vertex_Bitangent;
+
+//--------------------------------- Uniforms
+
+uniform mat4 model;
 uniform mat4 view;
+uniform mat4 projection;
 
-uniform vec3 shapeOffset;
-uniform vec3 shapeScale;
-uniform mat4 shapeTransform;
-uniform vec4 shapeColor;
+//--------------------------------- Output
 
-uniform bool      useBumpMap;
-uniform sampler2D shapeBumpMap;
-
-out vec3 GeoPos;
-out vec4 GeoColor;
-out vec2 GeoTexCoord;
-out vec3 GeoNormal;
-out mat3 GeoTBN;
+out mat4 geometry_Model;
+out vec3 geometry_Position;
+out vec3 geometry_Normal;
+out vec2 geometry_TexCoord;
 
 //---------------------------------
 
-void main ()
+void main()
 {
-    vec3 bump = useBumpMap? normal*vec3(texture(shapeBumpMap, texcoord))*0.1: vec3(0);
-    vec4 modelVertexPosition = vec4((bump+position)*shapeScale, 1.0f);
+    // Applying MVP matrix
+    gl_Position = projection*view*model*vec4(vertex_Position, 1.f);
 
-    vec4 offset = vec4(shapeOffset, 0);
-    gl_Position = projection * view * (offset + shapeTransform * modelVertexPosition);
-
-    GeoPos = vec3(offset + modelVertexPosition);
-    GeoColor = shapeColor; 
-    GeoNormal = mat3(transpose(inverse(shapeTransform)))*normal;
-    GeoTexCoord = texcoord;
-
-    GeoTBN = mat3(
-        normalize(vec3(shapeTransform*vec4(tangent,   0))),
-        normalize(vec3(shapeTransform*vec4(bitangent, 0))),
-        normalize(vec3(shapeTransform*vec4(normal,    0)))
-    );
+    // Passing values to geometry shader
+    geometry_Model = model;
+    geometry_Position = vertex_Position;
+    geometry_Normal  = normalize((inverse(model)*vec4(vertex_Normal, 1.f)).xyz);
+    geometry_TexCoord = vertex_TexCoord;
 }
 
 //---------------------------------

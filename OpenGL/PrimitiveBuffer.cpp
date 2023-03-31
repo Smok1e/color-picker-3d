@@ -1,5 +1,6 @@
 #include "PrimitiveBuffer.hpp"
 #include "Utils.hpp"
+#include "Logging.hpp"
 
 //-----------------------------------
 
@@ -34,7 +35,7 @@ bool PrimitiveBuffer::addObject(Light* light)
 {
 	if (m_lights.size() >= LIGHTS_MAX)
 	{
-		printf("Lights limit reached\n");
+		LogWarning("Lights limit reached\n");
 		return false;
 	}
 
@@ -73,8 +74,11 @@ bool PrimitiveBuffer::deleteObject(Light* light)
 void PrimitiveBuffer::drawObjects(Shader* shader /*= nullptr*/)
 {
 	if (shader)
+	{
+		shader->setUniform("lightCount", static_cast<int>(m_lights.size()));
 		for (size_t i = 0, lights_count = m_lights.size(); i < lights_count; i++)
 			m_lights[i]->apply(*shader, i);
+	}
 
 	for (const auto& object: m_objects)
 		object -> draw(shader);

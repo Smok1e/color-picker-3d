@@ -36,9 +36,13 @@ public:
 	virtual void setLightningEnabled(bool enable);
 	virtual bool getLightningEnabled() const;
 
+	virtual void setShaderNormalCalculationEnabled(bool enable);
+	virtual bool getShaderNormalCalculationEnabled() const;
+
 protected:
 	virtual void cleanup();
-	virtual void updateVertexData() = 0;
+	virtual void calculateVertices() = 0;
+	virtual void updateVertexData();
 	virtual void updateTransform();
 	virtual void bindShader(Shader& shader) const;
 
@@ -51,9 +55,11 @@ protected:
 	glm::vec3 m_position;
 	glm::vec3 m_scale;
 	glm::vec3 m_direction;
-	glm::mat4 m_transform;
+	glm::mat4 m_model;
+
 	Color m_color;
 	bool m_use_lightning;
+	bool m_use_normal_calculation;
 
 };
 

@@ -25,20 +25,8 @@ glm::vec2 Plane::getSize() const
 
 //---------------------------------
 
-void Plane::draw(Shader* shader /*= nullptr*/) const
+void Plane::calculateVertices()
 {
-	Primitive::draw(shader);
-    glSafeCallVoid(glBindVertexArray(m_vertex_array));
-	glSafeCallVoid(glDrawArrays(GL_TRIANGLE_STRIP, 0, m_vertex_buffer.getVertexCount()));
-	glSafeCallVoid(glBindVertexArray(0));
-}
-
-//---------------------------------
-
-void Plane::updateVertexData()
-{
-	cleanup();
-
 	glm::vec3 a(-m_size.x/2, 0, -m_size.y/2);
 	glm::vec3 b(-m_size.x/2, 0,  m_size.y/2);
 	glm::vec3 c( m_size.x/2, 0, -m_size.y/2);
@@ -75,15 +63,6 @@ void Plane::updateVertexData()
 	m_vertex_buffer += Vertex(d, uv_d, normal, tangent, bitangent);
 
 	m_vertex_buffer.commit();
-	m_vertex_buffer.bind();
-
-	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
-	glSafeCallVoid(glBindVertexArray(m_vertex_array));
-	Vertex::InitAttributes();
-	VertexBuffer::Unbind();
-	glSafeCallVoid(glBindVertexArray(0));
-
-	VertexBuffer::Unbind();
 }
 
 //---------------------------------

@@ -20,10 +20,11 @@ public:
 
 protected:
 	virtual void cleanup();
+	virtual void calculateVertices();
 	virtual void updateVertexData();
 
+	std::vector<GLuint> m_indices;
 	GLuint m_index_buffer;
-	size_t m_index_count;
 
 	size_t m_latitude_points;
 	size_t m_longitude_points;

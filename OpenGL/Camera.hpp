@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <filesystem>
 
+#include "Shader.hpp"
+
 //-----------------------------------
 
 class Camera
@@ -30,6 +32,7 @@ public:
 		return m_view;
 	}
 
+	void apply(Shader& shader) const;
 	void update();
 	void reset();
 

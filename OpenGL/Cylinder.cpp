@@ -16,16 +16,6 @@ Cylinder::Cylinder():
 
 //---------------------------------
 
-void Cylinder::draw(Shader* shader /*= nullptr*/) const
-{
-	Primitive::draw(shader);
-	glSafeCallVoid(glBindVertexArray(m_vertex_array));
-	glSafeCallVoid(glDrawArrays(GL_TRIANGLES, 0, m_vertex_buffer.getVertexCount()));
-	glSafeCallVoid(glBindVertexArray(0));
-}
-
-//---------------------------------
-
 void Cylinder::setRadius(float radius)
 {
 	if (m_radius != radius)
@@ -61,7 +51,7 @@ unsigned Cylinder::getPointCount() const
 
 //---------------------------------
 
-void Cylinder::updateVertexData()
+void Cylinder::calculateVertices()
 {
 	for (unsigned point = 0; point < m_point_count; point++)
 	{
@@ -97,13 +87,6 @@ void Cylinder::updateVertexData()
 	}
 
 	m_vertex_buffer.commit();
-	m_vertex_buffer.bind();
-
-	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
-	glSafeCallVoid(glBindVertexArray(m_vertex_array));
-	Vertex::InitAttributes();
-	VertexBuffer::Unbind();
-	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------

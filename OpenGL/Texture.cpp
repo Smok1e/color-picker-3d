@@ -2,6 +2,7 @@
 
 #include "Texture.hpp"
 #include "Utils.hpp"
+#include "Logging.hpp"
 
 //---------------------------------
 
@@ -28,7 +29,7 @@ bool Texture::loadFromFile(const std::filesystem::path& filename)
 	unsigned char* texture_data = SOIL_load_image(filename.string().c_str(), &size_x, &size_y, nullptr, SOIL_LOAD_RGBA);
 	if (!texture_data)
 	{
-		printf("Failed to load texture '%s'", filename.string().c_str());
+		LogError("Failed to load texture '%s'", filename.string().c_str());
 		return false;
 	}
 
@@ -36,7 +37,7 @@ bool Texture::loadFromFile(const std::filesystem::path& filename)
 	glSafeCallVoid(glGenTextures(1, &m_texture_handle));
 	if (!m_texture_handle)
 	{
-		printf("Failed to generate texture");
+		LogError("Failed to generate texture");
 		return false;
 	}
 

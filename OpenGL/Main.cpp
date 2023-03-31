@@ -14,6 +14,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "Logging.hpp"
 #include "Shader.hpp"
 #include "Sphere.hpp"
 #include "Cube.hpp"
@@ -44,6 +45,7 @@ struct WindowData
 	bool should_save_screenshot;
 	bool screenshot_hide_interface;
 	bool screenshot_show;
+	bool normal_calculation;
 	float camera_speed;
 	float fov;
 	float fov_vel;
@@ -77,9 +79,12 @@ void Cleanup();
 
 int main()
 {
+	SetLoggingLevel(LoggingLevel::Error);
+
+	LogInfo("Initializing GLFW");
 	if (!glfwInit())
 	{
-		printf("GLFW Initialization failed\n");
+		LogError("GLFW Initialization failed");
 		return 0;
 	}
 
@@ -90,6 +95,7 @@ int main()
 	glm::vec2 window_size = static_cast<glm::vec2>(monitor_size) * (FullscreenMode ? 1.f : .8f);
 
 	// Initializing window
+	LogInfo("Initializing window");
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	glfwSetErrorCallback(GLFWErrorCallback);
@@ -97,7 +103,7 @@ int main()
 	GLFWwindow* window = glfwCreateWindow(window_size.x, window_size.y, "OpenGL Test", FullscreenMode ? monitor : nullptr, nullptr);
 	if (!window)
 	{
-		printf("Window creation failed\n");
+		LogError("Window creation failed");
 		return 0;
 	}
 
@@ -108,6 +114,7 @@ int main()
 	glfwSetScrollCallback     (window, GLFWMouseWheelCallback );
 	glfwFocusWindow(window);
 	glfwSetWindowPos(window, monitor_size.x / 2 - window_size.x / 2, monitor_size.y / 2 - window_size.y / 2);
+	CenterCursor(window);
 
 	// Initializing interface
 	ImGui::CreateContext();
@@ -117,17 +124,18 @@ int main()
 
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 330");
+	ImGui_ImplOpenGL3_Init("#version 450");
 	SetInterfaceVisible(window, false);
 
-	// Initializing graphics
+	// Initializing OpenGL
+	LogInfo("Initializing OpenGL");
 	if (glewInit() != GLEW_OK)
 	{
-		printf("GLEW initalization failed\n");
+		LogError("GLEW initalization failed");
 		return false;
 	}
 
-	printf("OpenGL Version: %s\n", glSafeCall(glGetString(GL_VERSION)));
+	LogInfo("OpenGL Version: %s", glSafeCall(glGetString(GL_VERSION)));
 
 	int width = 0, height = 0;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -156,6 +164,7 @@ int main()
 	window_data.should_save_screenshot = false;
 	window_data.screenshot_hide_interface = true;
 	window_data.screenshot_show = true;
+	window_data.normal_calculation = false;
 	window_data.camera_speed = 1.f;
 	window_data.fov = 45.f;
 	window_data.fov_vel = 0.f;
@@ -172,13 +181,15 @@ int main()
 	normalmap.setID(Texture::ID::NormalMap);
 	normalmap.setFilters(Texture::Filter::NearestNeightbour);
 
-	auto object = scene += new Plane;
-	object->setColor(Color(0, .7, 1));
+	auto object = scene += new Cone;
+	object->setPointCount(32);
+	object->setColor(Color::White);
 	//object->setTexture(&texture);
-	object->setNormalMap(&normalmap);
+	//object->setNormalMap(&normalmap);
 
 	auto light1 = scene += new Light;
 	light1->setColor("#FFF7C9");
+	//light1->setSpecularStrength(0);
 	light1->setPosition(glm::vec3(-.5f, 0, 1));
 
 	auto light1_shape = scene += new Sphere;
@@ -192,7 +203,7 @@ int main()
 	light2->setColor("#33A7FF");
 	light2->setPosition(glm::vec3(.5f, 0, 1));
 	light2->setAmbientStrength(0);
-
+	
 	auto light2_shape = scene += new Cube;
 	light2_shape->setLightningEnabled(false);
 	light2_shape->setSize(glm::vec3(.1f));
@@ -204,9 +215,12 @@ int main()
 	{
 		DoControl(window);
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)  object_rotation_angle += 0.01;
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)  object_rotation_angle -= 0.01;
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_angle += 0.01;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_angle -= 0.01;
 		object->setDirection(glm::vec3(0, sin(object_rotation_angle), cos(object_rotation_angle)));
+
+		for (auto& object: scene)
+			object->setShaderNormalCalculationEnabled(window_data.normal_calculation);
 
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) object->setPosition(object->getPosition()+glm::vec3(0.01, 0, 0));
 		if (glfwGetKey(window, GLFW_KEY_LEFT ) == GLFW_PRESS) object->setPosition(object->getPosition()-glm::vec3(0.01, 0, 0));
@@ -237,9 +251,9 @@ void DoRender(GLFWwindow* window)
 	glSafeCallVoid(glClearColor(Color(.05f, .05f, .05f)));
 	glSafeCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-	shader["projection"] = *window_data->projection;
-	shader["view"      ] = window_data->camera->getView();
-	shader["viewPos"   ] = window_data->camera->getPosition();
+	shader["projection"  ] = *window_data->projection;
+	shader["view"        ] = window_data->camera->getView();
+	shader["viewPosition"] = window_data->camera->getPosition();
 	window_data->scene->drawObjects(window_data->shader);
 
 	ImGui::Render();
@@ -267,7 +281,13 @@ void DrawInterface(GLFWwindow* window)
 
 		ImGui::Begin("Debug");
 
-		if (ImGui::CollapsingHeader("Rendering"))
+		if (ImGui::CollapsingHeader("Debugging", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::Button("Debug break"))
+				DebugBreak(); // HELLO, PIDOR!
+		}
+
+		if (ImGui::CollapsingHeader("Rendering", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Text("Polygon render mode:");
 			ImGui::RadioButton("Fill", polygon_render_mode, GL_FILL);
@@ -275,9 +295,10 @@ void DrawInterface(GLFWwindow* window)
 			ImGui::RadioButton("Points", polygon_render_mode, GL_POINT);
 			ImGui::Separator();
 			ImGui::Checkbox("Enable depth test", &depth_test_enabled);
+			ImGui::Checkbox("Calculate normals in shader", &window_data->normal_calculation);
 		}
 
-		if (ImGui::CollapsingHeader("Camera"))
+		if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			glm::vec3 pos = window_data->camera->getPosition();
 			ImGui::Text("Position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
@@ -290,6 +311,32 @@ void DrawInterface(GLFWwindow* window)
 
 			ImGui::Checkbox("Hide interface on screenshot", &window_data->screenshot_hide_interface);
 			ImGui::Checkbox("Show screenshot", &window_data->screenshot_show);
+		}
+
+		if (ImGui::CollapsingHeader("Logging", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			static std::pair<LoggingLevel, const char*> items[] = {
+				{LoggingLevel::Info,    "Log everithing"     },
+				{LoggingLevel::Warning, "Warnings and errors"},
+				{LoggingLevel::Error,   "Log only errors"    },
+				{LoggingLevel::Silent,  "Disable logging"    }
+			};
+			size_t size = IM_ARRAYSIZE(items);
+			static int selected_item_index = std::distance(items, std::find_if(items, items + size, [](auto item) { return item.first == GetLoggingLevel(); }));
+
+			if (ImGui::BeginCombo("Logging level", items[selected_item_index].second))
+			{
+				for (size_t i = 0; i < size; i++)
+				{
+					bool selected = i == selected_item_index;
+					if (ImGui::Selectable(items[i].second, selected))
+						selected_item_index = i, SetLoggingLevel(items[i].first);
+
+					if (selected) ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}			
 		}
 
 		ImGui::End();
@@ -342,7 +389,7 @@ void DoControl(GLFWwindow* window)
 
 void GLFWErrorCallback(int error, const char* description)
 {
-	printf("GLFW Error: %s\n", description);
+	LogError("GLFW Error: %s\n", description);
 }
 
 void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -440,13 +487,13 @@ void OnSaveScreenshot(GLFWwindow* window)
 	const std::filesystem::path capture_directory("./captures");
 	if (!std::filesystem::exists(capture_directory))
 	{
-		printf("Creating directory %s\n", capture_directory.string().c_str());
+		LogInfo("Creating directory %s", capture_directory.string().c_str());
 		std::filesystem::create_directory(capture_directory);
 	}
 
 	else if (!std::filesystem::is_directory(capture_directory))
 	{
-		printf("Can't save image: '%s' exists, but it is not directory\n", capture_directory.string().c_str());
+		LogWarning("Can't save image: '%s' exists, but it is not directory", capture_directory.string().c_str());
 		return;
 	}
 
@@ -488,9 +535,9 @@ void OnSaveScreenshot(GLFWwindow* window)
 			system(command);
 		}
 
-		printf("Capture save as '%s'\n", path.string().c_str());
+		LogInfo("Capture save as '%s'", path.string().c_str());
 	}
-	else printf("Failed to save capture\n");
+	else LogError("Failed to save capture (SOIL error)");
 
 	delete[] data;
 }
@@ -522,6 +569,7 @@ void SetInterfaceVisible(GLFWwindow* window, bool visible)
 
 void Cleanup()
 {
+	LogInfo("Cleaning up");
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();

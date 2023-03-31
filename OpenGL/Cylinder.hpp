@@ -9,8 +9,6 @@ class Cylinder: public Primitive
 public:
 	Cylinder();
 
-	virtual void draw(Shader* shader = nullptr) const;
-
 	virtual void setRadius(float radius);
 	virtual float getRadius() const;
 
@@ -21,7 +19,7 @@ public:
 	virtual unsigned getPointCount() const;
 
 protected:
-	virtual void updateVertexData();
+	virtual void calculateVertices();
 
 	float m_radius;
 	float m_height;

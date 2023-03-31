@@ -6,8 +6,8 @@
 
 Sphere::Sphere():
 	Primitive(),
+	m_indices(0),
 	m_index_buffer(0),
-	m_index_count(0),
 	m_latitude_points(16),
 	m_longitude_points(16),
 	m_radius(.5f)
@@ -19,12 +19,12 @@ Sphere::Sphere():
 
 void Sphere::draw(Shader* shader /*= nullptr*/) const
 {
-	Primitive::draw(shader);
+	if (shader) bindShader(*shader);
     glSafeCallVoid(glBindVertexArray(m_vertex_array));
     glSafeCallVoid(glEnable(GL_PRIMITIVE_RESTART));
     glSafeCallVoid(glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX));
     glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer));
-    glSafeCallVoid(glDrawElements(GL_QUAD_STRIP, m_index_count, GL_UNSIGNED_INT, NULL));
+    glSafeCallVoid(glDrawElements(GL_QUAD_STRIP, m_indices.size(), GL_UNSIGNED_INT, NULL));
 	glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 	glSafeCallVoid(glBindVertexArray(0));
 }
@@ -73,11 +73,9 @@ void Sphere::cleanup()
 
 //---------------------------------
 
-void Sphere::updateVertexData()
+void Sphere::calculateVertices()
 {
-	cleanup();
-
-	std::vector<GLuint> indices;
+	m_indices.clear();
 	for (size_t lat = 1, index = 0; lat <= m_latitude_points; lat++)
 	{
 		double alpha0 = M_PI *(static_cast<double>(lat-1)/m_latitude_points - .5);
@@ -99,7 +97,7 @@ void Sphere::updateVertexData()
 		   glm::vec2 texcoord(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
 		   m_vertex_buffer += Vertex(position, texcoord, normal);
 
-           indices.push_back(index);
+           m_indices.push_back(index);
 		   index++;
 
 		   position = glm::vec3(x*zr1, y*zr1, z1)*m_radius;
@@ -107,26 +105,34 @@ void Sphere::updateVertexData()
 		   texcoord = glm::vec2(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
 		   m_vertex_buffer += Vertex(position, texcoord, normal);
 
-           indices.push_back(index);
+           m_indices.push_back(index);
 		   index++;
         }
 
-        indices.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+        m_indices.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
 	}
 
 	m_vertex_buffer.commit();
+}
+
+void Sphere::updateVertexData()
+{
+	cleanup();
+	calculateVertices();
 	m_vertex_buffer.bind();
 
+	// Allocating vertex array
 	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
 	glSafeCallVoid(glBindVertexArray(m_vertex_array));
 	Vertex::InitAttributes();
 	VertexBuffer::Unbind();
 	glSafeCallVoid(glBindVertexArray(0));
 
+	// Allocating index buffer
     glSafeCallVoid(glGenBuffers(1, &m_index_buffer));
     glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer));
-    glSafeCallVoid(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW));	
-	m_index_count = indices.size();
+    glSafeCallVoid(glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(GLuint), m_indices.data(), GL_STATIC_DRAW));	
+	glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }
 
 //---------------------------------

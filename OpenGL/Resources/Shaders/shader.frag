@@ -1,6 +1,7 @@
+// Fragment shader
 #version 450 core
 
-//---------------------------------
+//--------------------------------- Point light
 
 struct Light
 {
@@ -13,51 +14,50 @@ struct Light
 
 #define LIGHTS_MAX 32
 
-//---------------------------------
+//--------------------------------- Output
 
-in vec3 FragPos;
-in vec4 FragColor;
-in vec2 FragTexCoord;
-in vec3 FragNormal;
-in mat3 FragTBN;
+layout(location=0) out vec4 out_Color;
 
-uniform vec3 viewPos;
+//--------------------------------- Uniforms
 
-uniform sampler2D shapeTexture;
-uniform sampler2D shapeNormalMap;
-uniform bool      useTexture;
-uniform bool      useNormalMap;
-uniform bool      useLightning;
+uniform vec4      modelColor;
+uniform sampler2D modelTexture;
+uniform bool      modelUseTexture;
+uniform bool      modelUseLightning;
 
-uniform Light lights[LIGHTS_MAX];
+uniform vec3      viewPosition;
 
-out vec4 color;
+uniform Light     lights[LIGHTS_MAX];
+uniform int       lightCount;
 
-//---------------------------------
+//--------------------------------- Input
+
+in vec3 fragment_Position;
+in vec3 fragment_Normal;
+in vec2 fragment_TexCoord;
+
+//--------------------------------- 
 
 vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos);
 
-//---------------------------------
+//--------------------------------- 
 
 void main()
 {
-    vec4 fragColor = useTexture? texture(shapeTexture, FragTexCoord): FragColor;
-    vec3 fragNormal = useNormalMap? FragTBN*(2.0*texture(shapeNormalMap, FragTexCoord).xyz - 1.0): FragNormal;
-
-    if (useLightning)
+    vec4 source_color = modelUseTexture? texture(modelTexture, fragment_TexCoord): modelColor;
+    if (modelUseLightning)
     {
-        vec3 result = vec3(0, 0, 0);
-        vec3 normal = normalize(fragNormal);
-        for (int i = 0; i < LIGHTS_MAX; i++)
-            result += CalculatePointLight(lights[i], normal, viewPos, FragPos);
+        vec3 lightning_result = vec3(0, 0, 0);
+        for (int i = 0; i < lightCount; i++)
+            lightning_result += CalculatePointLight(lights[i], fragment_Normal, viewPosition, fragment_Position);
 
-        color = fragColor*vec4(result, 1);
+        out_Color = source_color*vec4(lightning_result, 1.f);
     }
 
-    else color = fragColor;
+	else out_Color = source_color;
 }
 
-//---------------------------------
+//--------------------------------- Lightning processing
 
 vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos)
 {

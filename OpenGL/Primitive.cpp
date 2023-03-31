@@ -14,11 +14,12 @@ Primitive::Primitive():
 	m_position(0),
 	m_scale(glm::vec3(1, 1, 1)),
 	m_direction(0),
-	m_transform(glm::identity<glm::mat4>()),
+	m_model(glm::identity<glm::mat4>()),
 	m_color(),
 	m_texture(nullptr),
 	m_normalmap(nullptr),
-	m_use_lightning(true)
+	m_use_lightning(true),
+	m_use_normal_calculation(false)
 {
 	updateTransform();
 }
@@ -33,13 +34,17 @@ Primitive::~Primitive()
 void Primitive::draw(Shader* shader /*= nullptr*/) const
 {
 	if (shader) bindShader(*shader);
+	glSafeCallVoid(glBindVertexArray(m_vertex_array));
+	glSafeCallVoid(glDrawArrays(GL_TRIANGLES, 0, m_vertex_buffer.getVertexCount()));
+	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------
 
 void Primitive::setPosition(const glm::vec3& position)
 {
-	m_position = position;
+	if (m_position != position) 
+		m_position = position, updateTransform();
 }
 
 glm::vec3 Primitive::getPosition() const
@@ -49,7 +54,8 @@ glm::vec3 Primitive::getPosition() const
 
 void Primitive::setScale(const glm::vec3& scale)
 {
-	m_scale = scale;
+	if (m_scale != scale)
+		m_scale = scale, updateTransform();
 }
 
 glm::vec3 Primitive::getScale() const
@@ -108,11 +114,36 @@ bool Primitive::getLightningEnabled() const
 	return m_use_lightning;
 }
 
+void Primitive::setShaderNormalCalculationEnabled(bool enable)
+{
+	m_use_normal_calculation = enable;
+}
+
+bool Primitive::getShaderNormalCalculationEnabled() const
+{
+	return m_use_normal_calculation;
+}
+
 //---------------------------------
 
 void Primitive::updateTransform()
 {
-	m_transform = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), m_direction+glm::vec3(0, 1, 0));
+	m_model = glm::identity<glm::mat4>();
+	m_model = glm::translate(m_model, m_position);
+	//m_model = glm::rotate(m_model, glm::pi<float>(), m_direction+glm::vec3(0, 2, 0));
+	m_model = glm::scale(m_model, m_scale);
+}
+
+void Primitive::updateVertexData()
+{
+	cleanup();
+	calculateVertices();
+	m_vertex_buffer.bind();
+	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
+	glSafeCallVoid(glBindVertexArray(m_vertex_array));
+	Vertex::InitAttributes();
+	VertexBuffer::Unbind();
+	glSafeCallVoid(glBindVertexArray(0));
 }
 
 //---------------------------------
@@ -125,17 +156,16 @@ void Primitive::cleanup()
 
 void Primitive::bindShader(Shader& shader) const
 {
-	shader["shapeOffset"   ] = m_position;
-	shader["shapeColor"    ] = m_color;
-	shader["shapeScale"    ] = m_scale;
-	shader["shapeTransform"] = m_transform;
-	shader["useTexture"    ] = m_texture   != nullptr;
-	shader["useNormalMap"  ] = m_normalmap != nullptr;
-	shader["useLightning"  ] = m_use_lightning;
+	shader["model"                    ] = m_model;
+	shader["modelColor"               ] = m_color;
+	shader["modelUseTexture"          ] = m_texture   != nullptr;
+	shader["modelUseNormalMap"        ] = m_normalmap != nullptr;
+	shader["modelUseLightning"        ] = m_use_lightning;
+	shader["modelUseNormalCalculation"] = m_use_normal_calculation;
 
+	if (m_texture  ) shader.setUniform("modelTexture",   *m_texture  );
+	if (m_normalmap) shader.setUniform("modelNormalMap", *m_normalmap);
 	shader.use();
-	if (m_texture  ) shader.setUniform("shapeTexture",   *m_texture  );
-	if (m_normalmap) shader.setUniform("shapeNormalMap", *m_normalmap);
 }
 
 //---------------------------------

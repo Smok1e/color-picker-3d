@@ -138,6 +138,7 @@
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugVisualization.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Primitive.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="DebugVisualization.hpp" />
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Cylinder.hpp" />
+    <ClInclude Include="Logging.hpp" />
     <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />

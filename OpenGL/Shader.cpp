@@ -4,6 +4,7 @@
 
 #include "Shader.hpp"
 #include "Utils.hpp"
+#include "Logging.hpp"
 
 //---------------------------------
 
@@ -79,7 +80,7 @@ bool Shader::loadFromFile(const std::filesystem::path& filename, Shader::Type ty
 	stream.open(filename, std::ios::binary);
 	if (!stream)
 	{
-		printf("Failed to open shader source '%s'\n", filename.string().c_str());
+		LogError("Failed to open shader source '%s'\n", filename.string().c_str());
 		return false;
 	}
 
@@ -95,7 +96,7 @@ bool Shader::loadFromFile(const std::filesystem::path& vertex_filename, const st
 	vertex_stream.open(vertex_filename);
 	if (!vertex_stream)
 	{
-		printf("Failed to load vertex shader source '%s'\n", vertex_filename.string().c_str());
+		LogError("Failed to load vertex shader source '%s'\n", vertex_filename.string().c_str());
 		return false;
 	}
 
@@ -104,7 +105,7 @@ bool Shader::loadFromFile(const std::filesystem::path& vertex_filename, const st
 	if (!fragment_stream)
 	{
 		vertex_stream.close();
-		printf("Failed to load fragment shader source '%s'\n", fragment_filename.string().c_str());
+		LogError("Failed to load fragment shader source '%s'\n", fragment_filename.string().c_str());
 		return false;
 	}
 
@@ -114,7 +115,7 @@ bool Shader::loadFromFile(const std::filesystem::path& vertex_filename, const st
 	{
 		vertex_stream.close();
 		fragment_stream.close();
-		printf("Failed to load geometry shader source '%s'\n", geometry_filename.string().c_str());
+		LogError("Failed to load geometry shader source '%s'\n", geometry_filename.string().c_str());
 		return false;
 	}
 
@@ -150,7 +151,7 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 		if (!success)
 		{
 			glSafeCallVoid(glGetShaderInfoLog(vertex_shader, sizeof(info), NULL, info));
-			printf("Vertex shader compilation failed:\n%s\n", info);
+			LogError("Vertex shader compilation failed:\n%s\n", info);
 
 			glSafeCallVoid(glDeleteShader(vertex_shader));
 			return false;
@@ -172,7 +173,7 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 		if (!success)
 		{
 			glSafeCallVoid(glGetShaderInfoLog(fragment_shader, sizeof(info), NULL, info));
-			printf("Fragment shader compilation failed:\n%s\n", info);
+			LogError("Fragment shader compilation failed:\n%s\n", info);
 
 			glSafeCallVoid(glDeleteShader(fragment_shader));
 			return false;
@@ -193,7 +194,7 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 		if (!success)
 		{
 			glSafeCallVoid(glGetShaderInfoLog(geometry_shader, sizeof(info), NULL, info));
-			printf("Geometry shader compilation failed:\n%s\n", info);
+			LogError("Geometry shader compilation failed:\n%s\n", info);
 
 			glSafeCallVoid(glDeleteShader(geometry_shader));
 			return false;
@@ -209,7 +210,7 @@ bool Shader::compile(const char* vertex_source, const char* fragment_source, con
 	if (!success)
 	{
 		glSafeCallVoid(glGetProgramInfoLog(m_program_handle, sizeof(info), nullptr, info));
-		printf("Shader program linking failed:\n%s\n", info);
+		LogError("Shader program linking failed:\n%s\n", info);
 
 		return false;
 	}
@@ -221,7 +222,7 @@ GLint Shader::getUniformLocation(const char* name)
 {
 	GLint location = glSafeCall(glGetUniformLocation(m_program_handle, name));
 	if (location == -1)
-		printf("Uniform '%s' not found in shader\n", name);
+		LogWarning("Uniform '%s' not found in shader\n", name);
 
 	return location;
 }

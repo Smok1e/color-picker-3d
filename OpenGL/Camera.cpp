@@ -3,19 +3,19 @@
 
 #include "Camera.hpp"
 #include "Utils.hpp"
+#include "Logging.hpp"
 
 //-----------------------------------
 
 Camera::Camera():
-	m_position(0),
-	m_velocity(0),
-	m_rotation(0),
+	m_position(glm::vec3(0, 0, 0)),
+	m_velocity(glm::vec3(0, 0, 0)),
+	m_rotation(glm::vec3(0, 0, 0)),
 	m_axes(),
 	m_view(),
 	m_velocity_dampling(.9f)
 {
 	reset();
-	updateView();
 }
 
 //-----------------------------------
@@ -127,6 +127,12 @@ void Camera::updateAxes()
 
 //-----------------------------------
 
+void Camera::apply(Shader& shader) const
+{
+	shader["view"        ] = m_view;
+	shader["viewPosition"] = m_position;
+}
+
 void Camera::update()
 {
 	translate(m_velocity);
@@ -140,7 +146,7 @@ void Camera::reset()
 	m_axes.y   = glm::vec3(0, 1, 0);
 	m_axes.z   = glm::vec3(0, 0, 1);
 	m_velocity = glm::vec3(0, 0, 0);
-	m_rotation = glm::vec2(0, 0   );
+	m_rotation = glm::vec3(0, 0, 0);
 
 	updateAxes();
 	updateView();
@@ -154,7 +160,7 @@ bool Camera::saveToFile(const std::filesystem::path& filename) const
 	stream.open(filename, std::ios::binary);
 	if (!stream)
 	{
-		printf("Failed to open file '%s'\n", filename.string().c_str());
+		LogError("Failed to open file '%s'\n", filename.string().c_str());
 		return false;
 	}
 
@@ -170,7 +176,7 @@ bool Camera::loadFromFile(const std::filesystem::path& filename)
 	stream.open(filename, std::ios::binary);
 	if (!stream)
 	{
-		printf("Failed to open file '%s'\n", filename.string().c_str());
+		LogError("Failed to open file '%s'\n", filename.string().c_str());
 		return false;
 	}
 
