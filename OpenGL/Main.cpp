@@ -216,7 +216,7 @@ int main()
 
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_angle.y += 0.01;
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_angle.y -= 0.01;
-		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_angle.xqq += 0.01;
+		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_angle.x += 0.01;
 		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) object_rotation_angle.x -= 0.01;
 		object->setRotation(object_rotation_angle);
 
