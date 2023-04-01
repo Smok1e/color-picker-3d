@@ -3,7 +3,7 @@
 #include "VertexBuffer.hpp"
 #include "Color.hpp"
 #include "Shader.hpp"
-#include "Texture.hpp"
+#include "Material.hpp"
 
 //---------------------------------
 
@@ -24,20 +24,8 @@ public:
 	virtual void setRotation(const glm::vec3& rotation);
 	virtual glm::vec3 getRotation() const;
 
-	virtual void setColor(const Color& color);
-	virtual Color getColor() const;
-
-	virtual void setTexture(Texture* texture);
-	virtual Texture* getTexture() const;
-
-	virtual void setNormalMap(Texture* normalmap);
-	virtual Texture* getNormalMap() const;
-
-	virtual void setSpecularMap(Texture* specmap);
-	virtual Texture* getSpecularMap() const;
-
-	virtual void setLightningEnabled(bool enable);
-	virtual bool getLightningEnabled() const;
+	virtual void setMaterial(Material* material);
+	virtual Material* getMaterial() const;
 
 protected:
 	virtual void cleanup();
@@ -49,18 +37,13 @@ protected:
 	VertexBuffer m_vertex_buffer;
 	GLuint m_vertex_array;
 
-	Texture* m_texture;
-	Texture* m_normalmap;
-	Texture* m_specmap;
+	Material* m_material;
 
 	glm::vec3 m_position;
 	glm::vec3 m_scale;
 	glm::vec3 m_rotation;
 	glm::mat4 m_model;
 	glm::mat3 m_normal_matrix;
-
-	Color m_color;
-	bool m_use_lightning;
 
 };
 

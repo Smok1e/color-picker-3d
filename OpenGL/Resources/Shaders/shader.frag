@@ -20,17 +20,20 @@ layout(location=0) out vec4 out_Color;
 
 //--------------------------------- Uniforms
 
-uniform vec4      modelColor;
-uniform sampler2D modelTexture;
-uniform sampler2D modelNormalMap;
-uniform sampler2D modelSpecularMap;
-uniform bool      modelUseTexture;
-uniform bool      modelUseNormalMap;
-uniform bool      modelUseSpecularMap;
-uniform bool      modelUseLightning;
+// Material
+uniform sampler2D materialDiffuseMap;
+uniform sampler2D materialNormalMap;
+uniform sampler2D materialSpecularMap;
+uniform sampler2D materialDepthMap;
+uniform bool      materialUseDiffuseMap;
+uniform bool      materialUseNormalMap;
+uniform bool      materialUseSpecularMap;
+uniform bool      materialUseDepthMap;
+uniform vec4      materialColor;
+uniform bool      materialUseLightning;
 
+// Lightning
 uniform vec3      viewPosition;
-
 uniform Light     lights[LIGHTS_MAX];
 uniform int       lightCount;
 
@@ -43,21 +46,22 @@ in vec2 fragment_TexCoord;
 
 //--------------------------------- 
 
-vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos, float intensity);
+vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos, float specular_intensity);
 
 //--------------------------------- 
 
 void main()
 {
-    vec4 source_color = modelUseTexture? texture(modelTexture, fragment_TexCoord): modelColor;
-    if (modelUseLightning)
+    vec4 source_color = materialUseDiffuseMap? texture(materialDiffuseMap, fragment_TexCoord): materialColor;
+
+    if (materialUseLightning)
     {
-        vec3 normal = modelUseNormalMap? fragment_TBN * normalize(2.f * texture(modelNormalMap, fragment_TexCoord).rgb - 1.f): fragment_Normal;
-        float intencity = modelUseSpecularMap? texture(modelSpecularMap, fragment_TexCoord).r: 1.f;
+        vec3 normal = materialUseNormalMap? fragment_TBN * normalize(2.f * texture(materialNormalMap, fragment_TexCoord).rgb - 1.f): fragment_Normal;
+        float specular_intensity = materialUseSpecularMap? texture(materialSpecularMap, fragment_TexCoord).r: 1.f;
 
         vec3 lightning_result = vec3(0, 0, 0);
         for (int i = 0; i < lightCount; i++)
-            lightning_result += CalculatePointLight(lights[i], normal, viewPosition, fragment_Position, intencity);
+            lightning_result += CalculatePointLight(lights[i], normal, viewPosition, fragment_Position, specular_intensity);
 
         out_Color = source_color*vec4(lightning_result, 1.f);
     }
@@ -67,7 +71,7 @@ void main()
 
 //--------------------------------- Lightning processing
 
-vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos, float intensity)
+vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos, float specular_intensity)
 {
     // Ambient lightning
     vec3 ambient = light.color.xyz*light.ambient;
@@ -81,7 +85,7 @@ vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos, f
     vec3 viewDir = normalize(viewpos-light.position);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), .0f), 32);
-    vec3 specular = light.color.xyz*light.specular*spec*intensity;
+    vec3 specular = light.color.xyz*light.specular*spec*specular_intensity;
 
     return ambient+diffuse+specular;
 }

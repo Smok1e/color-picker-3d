@@ -10,12 +10,6 @@
 class Texture
 {
 public:
-	enum class ID {
-		BaseColor,
-		NormalMap,
-		SpecularMap
-	};
-
 	enum class Filter {
 		NearestNeightbour = GL_NEAREST,
 		LinearInterpolation = GL_LINEAR
@@ -40,9 +34,6 @@ public:
 	// Binds texture
 	void bind() const;
 
-	// Sets texture's id as active
-	void setActive() const;
-
 	// Setting OpenGL texture instance parameters
 	void setParameter(GLenum name, GLfloat parameter);
 	void setParameter(GLenum name, const GLfloat* parameters);
@@ -54,12 +45,8 @@ public:
 	void setFilters(Filter minifier, Filter magnifier);
 	void setFilters(Filter filter);
 
-	void setID(ID id);
-	ID getID() const;
-
 protected:
 	GLuint m_texture_handle;
-	ID m_id;
 
 };
 

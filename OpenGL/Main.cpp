@@ -26,12 +26,13 @@
 #include "PrimitiveBuffer.hpp"
 #include "Light.hpp"
 #include "DebugVisualization.hpp"
+#include "Material.hpp"
 
 #pragma warning(disable: 4244)
 
 //-----------------------------------
 
-constexpr bool FullscreenMode = false;
+constexpr bool FullscreenMode = true;
 
 //-----------------------------------
 
@@ -171,63 +172,57 @@ int main()
 	window_data.aspect_ratio = window_size.x / window_size.y;
 	glfwSetWindowUserPointer(window, &window_data);
 
-	Texture texture;
-	texture.loadFromFile("Resources/Textures/diamond_ore/base.png");
-	texture.setID(Texture::ID::BaseColor);
-	texture.setFilters(Texture::Filter::NearestNeightbour);
+	//std::filesystem::path resources("C:/Users/Fedor/AppData/Roaming/.minecraft/resourcepacks/Default+Improved+PBR+1.12/assets/minecraft/textures/blocks");
+	std::filesystem::path resources("Resources/Textures/stone");
 
-	Texture normalmap;
-	normalmap.loadFromFile("Resources/Textures/diamond_ore/normal.png");
-	normalmap.setID(Texture::ID::NormalMap);
-	normalmap.setFilters(Texture::Filter::NearestNeightbour);
+	Material material;
 
-	Texture specularmap;
-	specularmap.loadFromFile("Resources/Textures/diamond_ore/specular.png");
-	specularmap.setID(Texture::ID::SpecularMap);
-	specularmap.setFilters(Texture::Filter::NearestNeightbour);
+	Texture diffuse;
+	diffuse.loadFromFile(resources/"base.png");
+	diffuse.setFilters(Texture::Filter::NearestNeightbour);
+	material.setDiffuseMap(&diffuse);
 
-	auto object = scene += new Sphere;
-	object->setColor(Color::White);
-	object->setTexture(&texture);
-	object->setNormalMap(&normalmap);
-	object->setSpecularMap(&specularmap);
+	Texture normal;
+	normal.loadFromFile(resources/"normal.png");
+	normal.setFilters(Texture::Filter::NearestNeightbour);
+	material.setNormalMap(&normal);
+
+	Texture specular;
+	specular.loadFromFile(resources/"specular.png");
+	specular.setFilters(Texture::Filter::NearestNeightbour);
+	material.setSpecularMap(&specular);
+
+	auto object = scene += new Cube;
+	//object->setPointCount(128);
+	object->setMaterial(&material);
 
 	auto light1 = scene += new Light;
 	light1->setColor("#FFF7C9");
 	light1->setPosition(glm::vec3(-.5f, 0, 1));
-	light1->setAmbientStrength(0);
-	light1->setDiffuseStrength(0.2);
+	light1->setAmbientStrength(0.02f);
+	light1->setDiffuseStrength(0.2f);
 	light1->setSpecularStrength(1);
-
-	auto light1_shape = scene += new Sphere;
-	light1_shape->setLightningEnabled(false);
-	light1_shape->setRadius(.1f);
-	light1_shape->setColor(light1->getColor());
-	light1_shape->setPosition(light1->getPosition());
-	light1_shape->setPointCount(64, 64);
 
 	auto light2 = scene += new Light;
 	light2->setColor("#33A7FF");
 	light2->setPosition(glm::vec3(.5f, 0, 1));
-	light2->setDiffuseStrength(0.2);
+	light2->setDiffuseStrength(0.2f);
 	light2->setAmbientStrength(0);
 	light2->setSpecularStrength(1);
-	
-	auto light2_shape = scene += new Cube;
-	light2_shape->setLightningEnabled(false);
-	light2_shape->setSize(glm::vec3(.1f));
-	light2_shape->setColor(light2->getColor());
-	light2_shape->setPosition(light2->getPosition());
 
 	glm::vec3 object_rotation_angle(0, 0, 0);
+	glm::vec3 object_rotation_vel(0, 0, 0);
 	while (!glfwWindowShouldClose(window))
 	{
 		DoControl(window);
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_angle.y += 0.01f;
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_angle.y -= 0.01f;
-		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_angle.x += 0.01f;
-		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) object_rotation_angle.x -= 0.01f;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) object_rotation_vel.y ++;
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_vel.y --;
+		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_vel.x ++;
+		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) object_rotation_vel.x --;
+
+		object_rotation_angle += object_rotation_vel * 0.0008f;
+		object_rotation_vel *= 0.95f;
 		object->setRotation(object_rotation_angle);
 
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) object->setPosition(object->getPosition()+glm::vec3(0.01, 0, 0));
@@ -256,7 +251,7 @@ void DoRender(GLFWwindow* window)
 	ImGui::NewFrame();
 	DrawInterface(window);	
 
-	glSafeCallVoid(glClearColor(Color(.05f, .05f, .05f)));
+	glSafeCallVoid(glClearColor(Color::Black));
 	glSafeCallVoid(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 	shader["projection"  ] = *window_data->projection;

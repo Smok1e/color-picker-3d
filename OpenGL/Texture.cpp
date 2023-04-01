@@ -7,13 +7,14 @@
 //---------------------------------
 
 Texture::Texture():
-	m_texture_handle(0),
-	m_id(ID::BaseColor)
-{}
+	m_texture_handle(0)
+{
+	glSafeCallVoid(glGenTextures(1, &m_texture_handle));
+}
 
 Texture::~Texture()
 {
-	if (m_texture_handle) glSafeCallVoid(glDeleteTextures(1, &m_texture_handle));
+	glSafeCallVoid(glDeleteTextures(1, &m_texture_handle));
 }
 
 //---------------------------------
@@ -29,15 +30,13 @@ bool Texture::loadFromFile(const std::filesystem::path& filename)
 	unsigned char* texture_data = SOIL_load_image(filename.string().c_str(), &size_x, &size_y, nullptr, SOIL_LOAD_RGBA);
 	if (!texture_data)
 	{
-		LogError("Failed to load texture '%s'", filename.string().c_str());
-		return false;
-	}
+		// Generating red texture that indicates loading failure
+		static uint32_t pixel = 0xFF0000FF;
 
-	// Generating texture
-	glSafeCallVoid(glGenTextures(1, &m_texture_handle));
-	if (!m_texture_handle)
-	{
-		LogError("Failed to generate texture");
+		bind();
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
+
+		LogError("Failed to load texture '%s'", filename.string().c_str());
 		return false;
 	}
 
@@ -94,11 +93,6 @@ void Texture::bind() const
 	glSafeCallVoid(glBindTexture(GL_TEXTURE_2D, m_texture_handle));
 }
 
-void Texture::setActive() const
-{
-	glSafeCallVoid(glActiveTexture(GL_TEXTURE0 + static_cast<int>(m_id)));
-}
-
 //---------------------------------
 
 void Texture::setParameter(GLenum name, GLfloat parameter)
@@ -140,18 +134,6 @@ void Texture::setFilters(Texture::Filter minifier, Texture::Filter magnifier)
 void Texture::setFilters(Texture::Filter filter)
 {
 	setFilters(filter, filter);
-}
-
-//---------------------------------
-
-void Texture::setID(Texture::ID id)
-{
-	m_id = id;
-}
-
-Texture::ID Texture::getID() const
-{
-	return m_id;
 }
 
 //---------------------------------

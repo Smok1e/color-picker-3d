@@ -140,6 +140,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logging.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="PrimitiveBuffer.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Cylinder.hpp" />
     <ClInclude Include="Logging.hpp" />
+    <ClInclude Include="Material.hpp" />
     <ClInclude Include="Plane.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />

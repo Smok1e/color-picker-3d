@@ -77,7 +77,7 @@ void LogV(LoggingLevel level, const char* file, int line, const char* format, va
 	printf("[%s] ", prefix);
 	SetConsoleTextAttribute(handle, info.wAttributes);
 
-	if (file)
+	if (file && _LoggingFlags & LOGGING_PRINT_LOCATION)
 	{
 		std::filesystem::path filename = std::filesystem::path(file).filename();
 		printf("[%s:%d] ", filename.string().c_str(), line);

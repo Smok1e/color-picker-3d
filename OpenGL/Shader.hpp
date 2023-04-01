@@ -82,7 +82,7 @@ public:
 	bool setUniform(const char* name, int   value);
 	bool setUniform(const char* name, float value);
 	bool setUniform(const char* name, bool  value);
-	bool setUniform(const char* name, const Texture& texture);
+	bool setUniform(const char* name, const Texture& texture, int id);
 
 	// Uniform binder that allows expressions such as shader_instance["uniform_name"] = uniform_value;
 	[[nodiscard]]

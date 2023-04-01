@@ -1,8 +1,9 @@
-#include <Windows.h>
 #include <filesystem>
 #include <fstream>
+#include <conio.h>
 
 #include "Utils.hpp"
+#include "Logging.hpp"
 
 //-----------------------------------
 
@@ -14,27 +15,7 @@ void CheckOpenGLCall(const char* expression, const char* file, int line)
 		const char* name = nullptr;
 		const char* description = nullptr;
 		GetOpenGLErrorMessage(code, &name, &description);
-
-		fprintf(stderr, "Expression '%s' (at line #%d in file %s) caused OpenGL error: %s\n", expression, line, file, name);
-
-		static char buffer[BUFFSIZE] = "";
-		sprintf_s(
-			buffer, 
-			"Expression:\n"
-			"%s\n"
-			"\n"
-			"Caused error: %s\n"
-			"File: %s\n"
-			"Line: %d\n"
-			"Press [YES] to debug break",
-			expression,
-			name,
-			file,
-			line
-		);
-		
-		if (MessageBoxA(nullptr, buffer, "OpenGL expression error", MB_ICONERROR | MB_YESNO) == IDYES)
-			DebugBreak();
+		Log(LoggingLevel::Error, file, line, "%s caused %s", expression, name);
 	}
 }
 

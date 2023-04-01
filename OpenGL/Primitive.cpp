@@ -15,10 +15,7 @@ Primitive::Primitive():
 	m_scale(glm::vec3(1, 1, 1)),
 	m_rotation(0),
 	m_model(glm::identity<glm::mat4>()),
-	m_color(),
-	m_texture(nullptr),
-	m_normalmap(nullptr),
-	m_use_lightning(true)
+	m_material(nullptr)
 {
 	updateTransform();
 }
@@ -73,54 +70,14 @@ glm::vec3 Primitive::getRotation() const
 	return m_rotation;
 }
 
-void Primitive::setColor(const Color& color)
+void Primitive::setMaterial(Material* material)
 {
-	m_color = color;
+	m_material = material;
 }
 
-Color Primitive::getColor() const
+Material* Primitive::getMaterial() const
 {
-	return m_color;
-}
-
-void Primitive::setTexture(Texture* texture)
-{
-	m_texture = texture;
-}
-
-Texture* Primitive::getTexture() const
-{
-	return m_texture;
-}
-
-void Primitive::setNormalMap(Texture* normalmap)
-{
-	m_normalmap = normalmap;
-}
-
-Texture* Primitive::getNormalMap() const
-{
-	return m_normalmap;
-}
-
-void Primitive::setSpecularMap(Texture* specmap)
-{
-	m_specmap = specmap;
-}
-
-Texture* Primitive::getSpecularMap() const
-{
-	return m_specmap;
-}
-
-void Primitive::setLightningEnabled(bool enable)
-{
-	m_use_lightning = enable;
-}
-
-bool Primitive::getLightningEnabled() const
-{
-	return m_use_lightning;
+	return m_material;
 }
 
 //---------------------------------
@@ -168,15 +125,7 @@ void Primitive::bindShader(Shader& shader) const
 {
 	shader["model"              ] = m_model;
 	shader["modelNormalMatrix"  ] = m_normal_matrix;
-	shader["modelColor"         ] = m_color;
-	shader["modelUseTexture"    ] = m_texture   != nullptr;
-	shader["modelUseNormalMap"  ] = m_normalmap != nullptr;
-	shader["modelUseSpecularMap"] = m_specmap   != nullptr;
-	shader["modelUseLightning"  ] = m_use_lightning;
-
-	if (m_texture  ) shader.setUniform("modelTexture",     *m_texture  );
-	if (m_normalmap) shader.setUniform("modelNormalMap",   *m_normalmap);
-	if (m_specmap  ) shader.setUniform("modelSpecularMap", *m_specmap  );
+	if (m_material) m_material->apply(shader);
 	shader.use();
 }
 

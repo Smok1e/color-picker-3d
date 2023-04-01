@@ -82,7 +82,14 @@ void Cylinder::calculateVertices()
 		m_vertex_buffer += Vertex(b, glm::vec2(t_next,    0));
 		m_vertex_buffer += Vertex(d, glm::vec2(t_next,    1));
 		m_vertex_buffer += Vertex(c, glm::vec2(t_current, 1));
-	}
+
+		m_vertex_buffer += Vertex(a,                              glm::vec2(t_current,                        0.0f));
+		m_vertex_buffer += Vertex(glm::vec3(0 , 0.5*m_height, 0), glm::vec2(t_current+.5f*(t_next-t_current), 0.5f));
+		m_vertex_buffer += Vertex(b,                              glm::vec2(t_next,                           0.0f));
+		m_vertex_buffer += Vertex(d,                              glm::vec2(t_next,                           1.0f));
+		m_vertex_buffer += Vertex(glm::vec3(0, -0.5*m_height, 0), glm::vec2(t_current+.5f*(t_next-t_current), 0.5f));
+		m_vertex_buffer += Vertex(c,                              glm::vec2(t_current,                        1.0f));
+	}											  
 
 	m_vertex_buffer.commit();
 }

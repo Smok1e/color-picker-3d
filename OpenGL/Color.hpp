@@ -49,6 +49,7 @@ public:
 	static const Color Transparent;
 	static const Color White;
 	static const Color Black;
+	static const Color DarkGrey;
 	static const Color Red;
 	static const Color Green;
 	static const Color Blue;

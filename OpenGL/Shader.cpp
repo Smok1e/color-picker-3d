@@ -330,14 +330,14 @@ bool Shader::setUniform(const char* name, bool value)
 	return setUniform(name, value? 1: 0);
 }
 
-bool Shader::setUniform(const char* name, const Texture& texture)
+bool Shader::setUniform(const char* name, const Texture& texture, int id)
 {
-	if (!setUniform(name, static_cast<int>(texture.getID())))
+	LogAssert(id >= 0 && id <= GL_TEXTURE31-GL_TEXTURE0 /* glActiveTexture accepts values from GL_TEXTURE0 to GL_TEXTURE31 */);
+	if (!setUniform(name, id))
 		return false;
 
-	texture.setActive();
+	glSafeCallVoid(glActiveTexture(GL_TEXTURE0+id));
 	texture.bind();
-
 	return true;
 }
 
