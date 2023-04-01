@@ -59,6 +59,8 @@ bool IsFloatStr(const char* begin, const char* limit = nullptr);
 size_t ReadStream      (std::ifstream& stream, std::vector<char>*    buffer);
 size_t ReadStreamBinary(std::ifstream& stream, std::vector<uint8_t>* buffer);
 
+int SystemF(const char* format, ...);
+
 //-----------------------------------
 
 template <typename T>

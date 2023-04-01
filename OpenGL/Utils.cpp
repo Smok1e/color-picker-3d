@@ -183,3 +183,16 @@ std::string to_string(const glm::vec3& vector)
 } // namespace std
 
 //-----------------------------------
+
+int SystemF(const char* format, ...)
+{
+	char buffer[BUFFSIZE] = "";
+	va_list args = {};
+	va_start(args, format);
+	vsprintf_s(buffer, format, args);
+	va_end(args);
+
+	return system(buffer);
+}
+
+//-----------------------------------

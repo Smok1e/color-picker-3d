@@ -21,10 +21,19 @@ public:
 	// Loads texture from file
 	bool loadFromFile(const std::filesystem::path& filename);
 
+	// Saves texture to file
+	bool saveToFile(const std::filesystem::path& filename) const;
+
+	// Captures the framebuffer into texture
+	void captureFrameBuffer();
+
+	// Flips the texture vertically
+	void flipVertically();
+
 	// Returns native OpenGL texture handle
 	GLuint getNativeHandle() const;
 
-	glm::u32vec2 getSize() const;
+	glm::uvec2 getSize() const;
 	unsigned getSizeX() const;
 	unsigned getSizeY() const;
 

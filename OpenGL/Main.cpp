@@ -9,7 +9,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <SOIL/SOIL.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -172,7 +171,7 @@ int main()
 	window_data.aspect_ratio = window_size.x / window_size.y;
 	glfwSetWindowUserPointer(window, &window_data);
 
-	std::filesystem::path resources("Resources/Textures/stone");
+	std::filesystem::path resources("Resources\\Textures\\wall");
 
 	Material material;
 
@@ -191,9 +190,8 @@ int main()
 	specular.setFilters(Texture::Filter::NearestNeightbour);
 	material.setSpecularMap(&specular);
 
-	auto object = scene += new Sphere;
+	auto object = scene += new Cube;
 	object->setMaterial(&material);
-	object->setPointCount(glm::uvec2(32));
 
 	auto light1 = scene += new Light;
 	light1->setColor("#FFF7C9");
@@ -481,7 +479,7 @@ void OnToggleRenderMode(GLFWwindow* window)
 //-----------------------------------
 
 void OnSaveScreenshot(GLFWwindow* window)
-{
+{		 
 	WindowData* window_data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 	if (!window_data)
 		return;
@@ -501,13 +499,9 @@ void OnSaveScreenshot(GLFWwindow* window)
 
 	std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	char filename[BUFFSIZE] = "";
-	strftime(filename, BUFFSIZE, "%d-%m-%Y_%H-%M-%S.bmp", std::localtime(&time));
+	strftime(filename, BUFFSIZE, "%d-%m-%Y_%H-%M-%S.png", std::localtime(&time));
 
 	std::filesystem::path path = capture_directory/filename;
-
-	GLint dims[4] = {0};
-	glSafeCallVoid(glGetIntegerv(GL_VIEWPORT, dims));
-	glm::uvec2 framesize(dims[2], dims[3]);
 
 	// Hide GUI and rerender frame if interface was active
 	bool was_interface_visible = window_data->interface_visible;
@@ -517,31 +511,19 @@ void OnSaveScreenshot(GLFWwindow* window)
 		DoRender(window);
 	}
 
-	uint8_t* data = new uint8_t[3*framesize.x*framesize.y];
-	glSafeCallVoid(glReadPixels(0, 0, framesize.x, framesize.y, GL_RGB, GL_UNSIGNED_BYTE, data));
+	Texture frame;
+	frame.captureFrameBuffer();
 
 	if (was_interface_visible && window_data->screenshot_hide_interface) 
 		SetInterfaceVisible(window, true);
 
-	// Flipping image vertically
-	for (size_t y = 0; y < framesize.y/2; y++)
-		for (size_t x = 0; x < framesize.x*3; x++)
-			std::swap(*(data+framesize.x*y*3+x), *(data+framesize.x*(framesize.y-y-1)*3+x));
+	if (!frame.saveToFile(path))
+		 return;
 
-	if (SOIL_save_image(path.string().c_str(), SOIL_SAVE_TYPE_BMP, framesize.x, framesize.y, 3, data))
-	{
-		if (window_data->screenshot_show)
-		{
-			char command[BUFFSIZE] = "";
-			sprintf_s(command, "start %s", path.string().c_str());
-			system(command);
-		}
+	if (window_data->screenshot_show)
+		SystemF("start %s", path.string().c_str());
 
-		LogInfo("Capture save as '%s'", path.string().c_str());
-	}
-	else LogError("Failed to save capture (SOIL error)");
-
-	delete[] data;
+	LogInfo("Screenshot saved as '%s'", path.string().c_str());	
 }
 
 //-----------------------------------
