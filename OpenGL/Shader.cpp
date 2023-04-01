@@ -275,6 +275,16 @@ bool Shader::setUniform(const char* name, const glm::mat4& matrix)
 	return true;
 }
 
+bool Shader::setUniform(const char* name, const glm::vec2& vector)
+{
+	GLint location = getUniformLocation(name);
+	if (location == -1)
+		return false;
+
+	glSafeCallVoid(glProgramUniform2f(m_program_handle, location, vector.x, vector.y));
+	return true;
+}
+
 bool Shader::setUniform(const char* name, const glm::vec3& vector)
 {
 	GLint location = getUniformLocation(name);

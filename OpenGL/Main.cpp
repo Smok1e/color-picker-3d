@@ -171,27 +171,35 @@ int main()
 	window_data.aspect_ratio = window_size.x / window_size.y;
 	glfwSetWindowUserPointer(window, &window_data);
 
-	std::filesystem::path resources("Resources\\Textures\\wall");
-
-	Material material;
-
-	Texture diffuse;
-	diffuse.loadFromFile(resources/"base.png");
-	diffuse.setFilters(Texture::Filter::NearestNeightbour);
-	material.setDiffuseMap(&diffuse);
+	std::filesystem::path surface_base("Resources\\Textures\\wall");
+	Texture surface_diffuse(surface_base/"base.png");
+	surface_diffuse.setWrappingMode(Texture::WrappingMode::Repeat);
+	Texture surface_normal(surface_base/"normal.png");
+	surface_normal.setWrappingMode(Texture::WrappingMode::Repeat);
+	Texture surface_specular(surface_base/"specular.png");
+	surface_specular.setWrappingMode(Texture::WrappingMode::Repeat);
+	Material surface_material;
+	surface_material.setTextureScale(glm::vec2(10, 10));
+	surface_material.setDiffuseMap(&surface_diffuse);
+	surface_material.setNormalMap(&surface_normal);
+	surface_material.setSpecularMap(&surface_specular);
 	
-	Texture normal;
-	normal.loadFromFile(resources/"normal.png");
-	normal.setFilters(Texture::Filter::NearestNeightbour);
-	material.setNormalMap(&normal);
-	
-	Texture specular;
-	specular.loadFromFile(resources/"specular.png");
-	specular.setFilters(Texture::Filter::NearestNeightbour);
-	material.setSpecularMap(&specular);
+	auto surface = scene += new Plane;
+	surface->setSize(glm::vec2(10, 10));
+	surface->setPosition(glm::vec3(0, -.5f, 0));
+	surface->setMaterial(&surface_material);
+
+	std::filesystem::path object_base("Resources\\Textures\\stone");
+	Texture object_diffuse(object_base/"base.png");
+	Texture object_normal(object_base/"normal.png");
+	Texture object_specular(object_base/"specular.png");
+	Material object_material;
+	object_material.setDiffuseMap(&object_diffuse);
+	object_material.setNormalMap(&object_normal);
+	object_material.setSpecularMap(&object_specular);
 
 	auto object = scene += new Cube;
-	object->setMaterial(&material);
+	object->setMaterial(&object_material);
 
 	auto light1 = scene += new Light;
 	light1->setColor("#FFF7C9");

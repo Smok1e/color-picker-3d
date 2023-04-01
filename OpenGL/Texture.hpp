@@ -15,7 +15,15 @@ public:
 		LinearInterpolation = GL_LINEAR
 	};
 
+	enum class WrappingMode {
+		Repeat = GL_REPEAT,
+		MirroredRepeat = GL_MIRRORED_REPEAT,
+		ClampToEdge = GL_CLAMP_TO_EDGE,
+		ClampToBorder = GL_CLAMP_TO_BORDER
+	};
+
 	Texture();
+	explicit Texture(const std::filesystem::path& filename);
 	~Texture();
 
 	// Loads texture from file
@@ -43,16 +51,13 @@ public:
 	// Binds texture
 	void bind() const;
 
-	// Setting OpenGL texture instance parameters
-	void setParameter(GLenum name, GLfloat parameter);
-	void setParameter(GLenum name, const GLfloat* parameters);
-	void setParameter(GLenum name, GLint parameter);
-	void setParameter(GLenum name, const GLint* parameters);
-
 	void setMinifierFilter(Filter filter);
 	void setMagnifierFilter(Filter filter);
 	void setFilters(Filter minifier, Filter magnifier);
 	void setFilters(Filter filter);
+
+	void setWrappingMode(WrappingMode mode);
+	WrappingMode getWrappingMode() const;
 
 protected:
 	GLuint m_texture_handle;

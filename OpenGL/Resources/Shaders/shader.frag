@@ -25,6 +25,7 @@ uniform sampler2D materialDiffuseMap;
 uniform sampler2D materialNormalMap;
 uniform sampler2D materialSpecularMap;
 uniform sampler2D materialDepthMap;
+uniform vec2      materialTextureScale;
 uniform bool      materialUseDiffuseMap;
 uniform bool      materialUseNormalMap;
 uniform bool      materialUseSpecularMap;
@@ -52,12 +53,13 @@ vec3 CalculatePointLight(Light light, vec3 normal, vec3 viewpos, vec3 fragpos, f
 
 void main()
 {
-    vec4 source_color = materialUseDiffuseMap? texture(materialDiffuseMap, fragment_TexCoord): materialColor;
+    vec2 texcoord = fragment_TexCoord*materialTextureScale;
+    vec4 source_color = materialUseDiffuseMap? texture(materialDiffuseMap, texcoord): materialColor;
 
     if (materialUseLightning)
     {
-        vec3 normal = materialUseNormalMap? fragment_TBN * normalize(2.f * texture(materialNormalMap, fragment_TexCoord).rgb - 1.f): fragment_Normal;
-        float specular_intensity = materialUseSpecularMap? texture(materialSpecularMap, fragment_TexCoord).r: 1.f;
+        vec3 normal = materialUseNormalMap? fragment_TBN * normalize(2.f * texture(materialNormalMap, texcoord).rgb - 1.f): fragment_Normal;
+        float specular_intensity = materialUseSpecularMap? texture(materialSpecularMap, texcoord).r: 1.f;
 
         vec3 lightning_result = vec3(0, 0, 0);
         for (int i = 0; i < lightCount; i++)

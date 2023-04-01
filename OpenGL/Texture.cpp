@@ -17,6 +17,12 @@ Texture::Texture():
 	glSafeCallVoid(glGenTextures(1, &m_texture_handle));
 }
 
+Texture::Texture(const std::filesystem::path& filename):
+	Texture()
+{
+	loadFromFile(filename);
+}
+
 Texture::~Texture()
 {
 	glSafeCallVoid(glDeleteTextures(1, &m_texture_handle));
@@ -188,34 +194,14 @@ void Texture::bind() const
 
 //---------------------------------
 
-void Texture::setParameter(GLenum name, GLfloat parameter)
-{
-	glSafeCallVoid(glTextureParameterf(m_texture_handle, name, parameter));
-}
-
-void Texture::setParameter(GLenum name, const GLfloat* parameters)
-{
-	glSafeCallVoid(glTextureParameterfv(m_texture_handle, name, parameters));
-}
-
-void Texture::setParameter(GLenum name, GLint parameter)
-{
-	glSafeCallVoid(glTextureParameteri(m_texture_handle, name, parameter));
-}
-
-void Texture::setParameter(GLenum name, const GLint* parameters)
-{
-	glSafeCallVoid(glTextureParameteriv(m_texture_handle, name, parameters));
-}
-
 void Texture::setMinifierFilter(Texture::Filter filter)
 {
-	setParameter(GL_TEXTURE_MIN_FILTER, static_cast<GLint>(filter));
+	glSafeCallVoid(glTextureParameteri(m_texture_handle, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(filter)));
 }
 
 void Texture::setMagnifierFilter(Texture::Filter filter)
 {
-	setParameter(GL_TEXTURE_MAG_FILTER, static_cast<GLint>(filter));
+	glSafeCallVoid(glTextureParameteri(m_texture_handle, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(filter)));
 }
 
 void Texture::setFilters(Texture::Filter minifier, Texture::Filter magnifier)
@@ -227,6 +213,19 @@ void Texture::setFilters(Texture::Filter minifier, Texture::Filter magnifier)
 void Texture::setFilters(Texture::Filter filter)
 {
 	setFilters(filter, filter);
+}
+
+void Texture::setWrappingMode(Texture::WrappingMode mode)
+{
+	glSafeCallVoid(glTextureParameteri(m_texture_handle, GL_TEXTURE_WRAP_S, static_cast<GLint>(mode)));
+	glSafeCallVoid(glTextureParameteri(m_texture_handle, GL_TEXTURE_WRAP_T, static_cast<GLint>(mode)));
+}
+
+Texture::WrappingMode Texture::getWrappingMode() const
+{
+	GLint mode = 0;
+	glGetTextureParameteriv(m_texture_handle, GL_TEXTURE_WRAP_S, &mode);
+	return static_cast<Texture::WrappingMode>(mode);
 }
 
 //---------------------------------

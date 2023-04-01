@@ -30,6 +30,9 @@ public:
 	void setDepthMap(Texture* depth);
 	Texture* getDepthMap() const;
 
+	void setTextureScale(const glm::vec2& scale);
+	glm::vec2 getTextureScale() const;
+
 	void setColor(const Color& color);
 	Color getColor() const;
 
@@ -48,6 +51,7 @@ private:
 	Texture* m_normal;
 	Texture* m_specular;
 	Texture* m_depth;
+	glm::vec2 m_texture_scale;
 	Color m_color;
 	bool m_lightning_enabled;
 

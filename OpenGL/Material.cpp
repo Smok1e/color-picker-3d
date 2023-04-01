@@ -7,6 +7,7 @@ Material::Material():
 	m_normal(nullptr),
 	m_specular(nullptr),
 	m_depth(nullptr),
+	m_texture_scale(glm::vec2(1, 1)),
 	m_color(Color::Black),
 	m_lightning_enabled(true)
 {}
@@ -17,6 +18,7 @@ Material::Material(const Material& copy):
 	m_specular(copy.m_specular),
 	m_depth(copy.m_depth),
 	m_color(copy.m_color),
+	m_texture_scale(copy.m_texture_scale),
 	m_lightning_enabled(copy.m_lightning_enabled)
 {}
 
@@ -26,6 +28,7 @@ Material::Material(const Color& color):
 	m_specular(nullptr),
 	m_depth(nullptr),
 	m_color(color),
+	m_texture_scale(glm::vec2(1, 1)),
 	m_lightning_enabled(true)
 {}
 
@@ -33,6 +36,7 @@ Material::Material(const Color& color):
 
 void Material::apply(Shader& shader) const
 {
+	shader["materialTextureScale"  ] = m_texture_scale;
 	shader["materialUseDiffuseMap" ] = m_diffuse  != nullptr;
 	shader["materialUseNormalMap"  ] = m_normal   != nullptr;
 	shader["materialUseSpecularMap"] = m_specular != nullptr;
@@ -85,6 +89,16 @@ void Material::setDepthMap(Texture* depth)
 Texture* Material::getDepthMap() const
 {
 	return m_depth;
+}
+
+void Material::setTextureScale(const glm::vec2& scale)
+{
+	m_texture_scale = scale;
+}
+
+glm::vec2 Material::getTextureScale() const
+{
+	return m_texture_scale;
 }
 
 void Material::setColor(const Color& color)

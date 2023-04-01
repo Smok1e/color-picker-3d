@@ -76,6 +76,7 @@ public:
 	// Uniforms
 	bool setUniform(const char* name, const glm::mat3& matrix);
 	bool setUniform(const char* name, const glm::mat4& matrix);
+	bool setUniform(const char* name, const glm::vec2& vector);
 	bool setUniform(const char* name, const glm::vec3& vector);
 	bool setUniform(const char* name, const glm::vec4& vector);
 	bool setUniform(const char* name, const Color& color);
