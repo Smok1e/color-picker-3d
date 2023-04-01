@@ -39,10 +39,10 @@ uniform int       lightCount;
 
 //--------------------------------- Input
 
-in vec3 fragment_Position;
-in vec3 fragment_Normal;
-in mat3 fragment_TBN;
-in vec2 fragment_TexCoord;
+smooth in vec3 fragment_Position;
+smooth in vec3 fragment_Normal;
+       in mat3 fragment_TBN;
+smooth in vec2 fragment_TexCoord;
 
 //--------------------------------- 
 

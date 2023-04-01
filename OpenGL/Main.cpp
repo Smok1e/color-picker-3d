@@ -32,7 +32,7 @@
 
 //-----------------------------------
 
-constexpr bool FullscreenMode = true;
+constexpr bool FullscreenMode = false;
 
 //-----------------------------------
 
@@ -172,7 +172,6 @@ int main()
 	window_data.aspect_ratio = window_size.x / window_size.y;
 	glfwSetWindowUserPointer(window, &window_data);
 
-	//std::filesystem::path resources("C:/Users/Fedor/AppData/Roaming/.minecraft/resourcepacks/Default+Improved+PBR+1.12/assets/minecraft/textures/blocks");
 	std::filesystem::path resources("Resources/Textures/stone");
 
 	Material material;
@@ -181,20 +180,20 @@ int main()
 	diffuse.loadFromFile(resources/"base.png");
 	diffuse.setFilters(Texture::Filter::NearestNeightbour);
 	material.setDiffuseMap(&diffuse);
-
+	
 	Texture normal;
 	normal.loadFromFile(resources/"normal.png");
 	normal.setFilters(Texture::Filter::NearestNeightbour);
 	material.setNormalMap(&normal);
-
+	
 	Texture specular;
 	specular.loadFromFile(resources/"specular.png");
 	specular.setFilters(Texture::Filter::NearestNeightbour);
 	material.setSpecularMap(&specular);
 
-	auto object = scene += new Cube;
-	//object->setPointCount(128);
+	auto object = scene += new Sphere;
 	object->setMaterial(&material);
+	object->setPointCount(glm::uvec2(32));
 
 	auto light1 = scene += new Light;
 	light1->setColor("#FFF7C9");

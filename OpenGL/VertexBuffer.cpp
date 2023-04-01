@@ -91,16 +91,16 @@ void VertexBuffer::calculateNormals()
 		glm::vec3 edge1 = face[1].position-face[0].position;
 		glm::vec3 edge2 = face[2].position-face[0].position;
 		glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
-
+		
 		glm::vec2 delta_uv1 = face[1].texcoord - face[0].texcoord;
 		glm::vec2 delta_uv2 = face[2].texcoord - face[0].texcoord;  
-
+		
 		glm::vec3 tangent = 1.f / (delta_uv1.x*delta_uv2.y - delta_uv2.x*delta_uv1.y) * glm::vec3(
 			delta_uv2.y*edge1.x - delta_uv1.y*edge2.x,
 			delta_uv2.y*edge1.y - delta_uv1.y*edge2.y,
 			delta_uv2.y*edge1.z - delta_uv1.y*edge2.z
 		);
-
+		
 		face[0].normal  = face[1].normal  = face[2].normal  = normal;
 		face[0].tangent = face[1].tangent = face[2].tangent = tangent;
 		// Bitangent vector will be calculated later in the vertex 

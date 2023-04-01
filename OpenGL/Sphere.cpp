@@ -4,29 +4,16 @@
 
 //---------------------------------
 
-Sphere::Sphere():
-	Primitive(),
-	m_indices(0),
-	m_index_buffer(0),
-	m_latitude_points(16),
-	m_longitude_points(16),
-	m_radius(.5f)
-{
-	updateVertexData();
-}
+glm::vec3 CalculateSpherePoint(float radius, double alpha, double beta);
 
 //---------------------------------
 
-void Sphere::draw(Shader* shader /*= nullptr*/) const
+Sphere::Sphere():
+	Primitive(),
+	m_point_count(16),
+	m_radius(.5f)
 {
-	if (shader) bindShader(*shader);
-    glSafeCallVoid(glBindVertexArray(m_vertex_array));
-    glSafeCallVoid(glEnable(GL_PRIMITIVE_RESTART));
-    glSafeCallVoid(glPrimitiveRestartIndex(GL_PRIMITIVE_RESTART_FIXED_INDEX));
-    glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer));
-    glSafeCallVoid(glDrawElements(GL_QUAD_STRIP, m_indices.size(), GL_UNSIGNED_INT, NULL));
-	glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-	glSafeCallVoid(glBindVertexArray(0));
+	updateVertexData();
 }
 
 //---------------------------------
@@ -42,98 +29,65 @@ float Sphere::getRadius() const
 	return m_radius;
 }
 
-void Sphere::setPointCount(size_t latitude, size_t longitude /*= 0*/)
+void Sphere::setPointCount(const glm::uvec2& count)
 {
-	if (latitude != m_latitude_points || longitude != m_longitude_points)
+	if (m_point_count != count)
 	{
-		m_latitude_points = latitude;
-		m_longitude_points = longitude? longitude: latitude;
+		m_point_count = count;
 		updateVertexData();
 	}
 }
 
-size_t Sphere::getLatitudePointCount() const
+glm::uvec2 Sphere::getPointCount() const
 {
-	return m_latitude_points;
-}
-
-size_t Sphere::getLongitudePointCount() const
-{
-	return m_longitude_points;
-}
-
-//---------------------------------
-
-void Sphere::cleanup()
-{
-	Primitive::cleanup();
-	if (m_index_buffer) glSafeCallVoid(glDeleteBuffers(1, &m_index_buffer));
-	m_index_buffer = 0;
+	return m_point_count;
 }
 
 //---------------------------------
 
 void Sphere::calculateVertices()
 {
-	m_indices.clear();
-	for (size_t lat = 1, index = 0; lat <= m_latitude_points; lat++)
+	for (unsigned y = 0; y < m_point_count.y; y++)
 	{
-		double alpha0 = M_PI *(static_cast<double>(lat-1)/m_latitude_points - .5);
-		double z0     = sin(alpha0);
-		double zr0    = cos(alpha0);
+		double ty_current   = static_cast<double>(y  )/m_point_count.y;
+		double ty_next      = static_cast<double>(y+1)/m_point_count.y;
+		double beta_current = ty_current * M_PI*2;
+		double beta_next    = ty_next    * M_PI*2;
 
-		double alpha1 = M_PI * (static_cast<double>(lat)/m_latitude_points - .5);
-		double z1     = sin(alpha1);
-		double zr1    = cos(alpha1);
-
-		for (size_t lng = 1; lng <= m_longitude_points+1; lng++) 
+		for (unsigned x = 0; x < m_point_count.x; x++)
 		{
-           double beta = 2 * M_PI * static_cast<double>(lng-1) / m_longitude_points;
-           double x = cos(beta);
-           double y = sin(beta);
-									 
-		   glm::vec3 position = glm::vec3(x*zr0, y*zr0, z0)*m_radius;
-		   glm::vec3 normal = glm::normalize(position);
-		   glm::vec2 texcoord(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
-		   m_vertex_buffer += Vertex(position, texcoord, normal);
+			double tx_current    = static_cast<double>(x  )/m_point_count.x;
+			double tx_next       = static_cast<double>(x+1)/m_point_count.x;
+			double alpha_current = M_PI/2 - tx_current * M_PI;
+			double alpha_next    = M_PI/2 - tx_next    * M_PI;
 
-           m_indices.push_back(index);
-		   index++;
+			Vertex a(CalculateSpherePoint(m_radius, alpha_current, beta_current), glm::vec2(tx_current, ty_current));
+			Vertex b(CalculateSpherePoint(m_radius, alpha_current, beta_next   ), glm::vec2(tx_current, ty_next   ));
+			Vertex c(CalculateSpherePoint(m_radius, alpha_next,    beta_current), glm::vec2(tx_next,    ty_current));
+			Vertex d(CalculateSpherePoint(m_radius, alpha_next,    beta_next   ), glm::vec2(tx_next,    ty_next   ));
 
-		   position = glm::vec3(x*zr1, y*zr1, z1)*m_radius;
-		   normal = glm::normalize(position);
-		   texcoord = glm::vec2(atan2(normal.x, normal.z) / (2*M_PI) + 0.5, normal.y * 0.5 + 0.5);
-		   m_vertex_buffer += Vertex(position, texcoord, normal);
+			m_vertex_buffer += c;
+			m_vertex_buffer += b;
+			m_vertex_buffer += a;
 
-           m_indices.push_back(index);
-		   index++;
-        }
-
-        m_indices.push_back(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+			m_vertex_buffer += b;
+			m_vertex_buffer += c;
+			m_vertex_buffer += d;
+		}
 	}
 
-	// Do not calculate vertices automatically
-	m_vertex_buffer.commit(false);
+	m_vertex_buffer.commit();
 }
 
-void Sphere::updateVertexData()
+//---------------------------------
+
+glm::vec3 CalculateSpherePoint(float radius, double alpha, double beta)
 {
-	cleanup();
-	calculateVertices();
-	m_vertex_buffer.bind();
-
-	// Allocating vertex array
-	glSafeCallVoid(glGenVertexArrays(1, &m_vertex_array));
-	glSafeCallVoid(glBindVertexArray(m_vertex_array));
-	Vertex::InitAttributes();
-	VertexBuffer::Unbind();
-	glSafeCallVoid(glBindVertexArray(0));
-
-	// Allocating index buffer
-    glSafeCallVoid(glGenBuffers(1, &m_index_buffer));
-    glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index_buffer));
-    glSafeCallVoid(glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(GLuint), m_indices.data(), GL_STATIC_DRAW));	
-	glSafeCallVoid(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+	return radius*glm::vec3(
+		cos(alpha)*cos(beta),
+		cos(alpha)*sin(beta),
+		sin(alpha)
+	);
 }
 
 //---------------------------------

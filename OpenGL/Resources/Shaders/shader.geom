@@ -8,17 +8,17 @@ layout(triangle_strip, max_vertices=3) out;
 
 //--------------------------------- Input
 
-in vec3 geometry_Position[];
-in vec3 geometry_Normal[];
-in mat3 geometry_TBN[];
-in vec2 geometry_TexCoord[];
+smooth in vec3 geometry_Position[];
+smooth in vec3 geometry_Normal[];
+       in mat3 geometry_TBN[];
+smooth in vec2 geometry_TexCoord[];
 
 //--------------------------------- Output
 
-out vec3 fragment_Position;
-out vec3 fragment_Normal;
-out mat3 fragment_TBN;
-out vec2 fragment_TexCoord;
+smooth out vec3 fragment_Position;
+smooth out vec3 fragment_Normal;
+       out mat3 fragment_TBN;
+smooth out vec2 fragment_TexCoord;
 
 //--------------------------------- 
 
