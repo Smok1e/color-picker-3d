@@ -5,7 +5,7 @@
 
 //-----------------------------------
 
-void DrawVector(Shader* shader, glm::vec3 position, glm::vec3 vector, Color color /*= Color::Red*/)
+void DrawVector(Shader& shader, glm::vec3 position, glm::vec3 vector, Color color /*= Color::Red*/)
 {
 	constexpr const float length    = .3f;
 	constexpr const float thickness = .002f;

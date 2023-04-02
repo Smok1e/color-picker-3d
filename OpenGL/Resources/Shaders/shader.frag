@@ -5,16 +5,11 @@
 
 #define LIGHTS_MAX 16
 
-struct AmbientLight
-{
-    vec4 color;
-    float strength;
-};
-
 struct PointLight
 {
     vec3 position;
     vec4 color;
+    float ambient_strength;
     float diffuse_strength;
     float specular_strength;
 };
@@ -23,6 +18,7 @@ struct DirectionalLight
 {
     vec3 direction;
     vec4 color;
+    float ambient_strength;
     float diffuse_strength;
     float specular_strength;
 };
@@ -32,6 +28,7 @@ struct SpotLight
     vec3 position;
     vec3 direction;
     vec4 color;
+    float ambient_strength;
     float diffuse_strength;
     float specular_strength;
     float cutoff_angle;
@@ -59,8 +56,6 @@ uniform bool      materialUseLightning;
 
 // Lights
 uniform vec3             viewPosition;
-uniform AmbientLight     ambientLights[LIGHTS_MAX];
-uniform int              ambientLightCount;
 uniform PointLight       pointLights[LIGHTS_MAX];
 uniform int              pointLightCount;
 uniform DirectionalLight dirLights[LIGHTS_MAX];
@@ -96,10 +91,6 @@ void main()
 
         vec3 lightning_result = vec3(0, 0, 0);
 
-        // Ambient lights
-        for (int i = 0; i < ambientLightCount; i++)
-            lightning_result += ambientLights[i].color.rgb*ambientLights[i].strength;
-
         // Point lights
         for (int i = 0; i < pointLightCount; i++)
             lightning_result += CalculatePointLight(pointLights[i], normal, viewPosition, fragment_Position, specular_intensity);
@@ -123,57 +114,66 @@ void main()
 // Point light
 vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewpos, vec3 fragpos, float specular_intensity)
 {
-    // Diffuse lightning
+    // Ambient
+    vec3 ambient = light.color.rgb*light.ambient_strength;
+
+    // Diffuse
     vec3 lightdir = normalize(light.position-fragpos);
     float diff = max(dot(normal, lightdir), .0f);
-    vec3 diffuse = light.color.xyz*light.diffuse_strength*diff;
+    vec3 diffuse = light.color.rgb*light.diffuse_strength*diff;
 
-    // Specular lightning
+    // Specular
     vec3 viewdir = normalize(viewpos-light.position);
     vec3 reflectdir = reflect(-lightdir, normal);
     float spec = pow(max(dot(viewdir, reflectdir), .0f), 32);
-    vec3 specular = light.color.xyz*light.specular_strength*spec*specular_intensity;
+    vec3 specular = light.color.rgb*light.specular_strength*spec*specular_intensity;
 
-    return diffuse+specular;
+    return ambient+diffuse+specular;
 }
 
 // Directional light
 vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewdir, float specular_intensity)
 {
-    // Diffuse lightning
+    // Ambient
+    vec3 ambient = light.color.rgb*light.ambient_strength;
+
+    // Diffuse
     vec3 lightdir = normalize(-light.direction);
     float diff = max(dot(normal, lightdir), .0f);
     vec3 diffuse = light.color.xyz*light.diffuse_strength*diff;
 
-    // Specular lightning
+    // Specular
     vec3 reflectDir = reflect(-lightdir, normal);
     float spec = pow(max(dot(viewdir, reflectDir), .0f), 32);
     vec3 specular = light.color.xyz*light.specular_strength*spec*specular_intensity;
 
-    return diffuse+specular; 
+    return ambient+diffuse+specular; 
 }
 
 // Spot light
 vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 fragpos, vec3 viewdir, float specular_intensity)
 {
+    // Ambient
+    vec3 ambient = light.color.rgb*light.ambient_strength;
+
     vec3 lightdir = normalize(light.position-fragpos);
     float theta = dot(lightdir, normalize(-light.direction));  
 
     float epsilon = light.cutoff_angle - light.outer_cutoff_angle;
     float intensity = -clamp((theta-light.outer_cutoff_angle)/epsilon, -1.f, 0.f);
     if (theta <= light.cutoff_angle)
-        return vec3(0, 0, 0);
+        return ambient;
 
-    // Diffuse lightning
+    // Diffuse
     float diff = max(dot(normal, lightdir), .0f);
     vec3 diffuse = light.color.xyz*light.diffuse_strength*diff*intensity;
 
-    // Specular lightning
+    // Specular
     vec3 reflectDir = reflect(-lightdir, normal);
     float spec = pow(max(dot(viewdir, reflectDir), .0f), 32);
     vec3 specular = light.color.xyz*light.specular_strength*spec*specular_intensity*intensity;
         
-    return diffuse+specular;
+    return ambient+diffuse+specular;
 }
 
 //---------------------------------

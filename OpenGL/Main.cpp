@@ -22,10 +22,9 @@
 #include "Cone.hpp"
 #include "Utils.hpp"
 #include "Camera.hpp"
-#include "PrimitiveBuffer.hpp"
+#include "SceneBuffer.hpp"
 #include "DebugVisualization.hpp"
 #include "Material.hpp"
-#include "AmbientLight.hpp"
 #include "PointLight.hpp"
 #include "DirectionalLight.hpp"
 #include "SpotLight.hpp"
@@ -42,7 +41,7 @@ struct WindowData
 {
 	Camera* camera;
 	Shader* shader;
-	PrimitiveBuffer* scene;
+	SceneBuffer* scene;
 	glm::mat4* projection;
 	bool interface_visible;		
 	bool should_save_screenshot;
@@ -155,7 +154,7 @@ int main()
 		return 0;
 
 	Camera camera;
-	PrimitiveBuffer scene;
+	SceneBuffer scene;
 	glm::mat4 projection;
 
 	WindowData window_data = {};
@@ -194,8 +193,11 @@ int main()
 
 	std::filesystem::path object_base("Resources\\Textures\\stone");
 	Texture object_diffuse(object_base/"base.png");
+	//object_diffuse.setFilters(Texture::Filter::NearestNeightbour);
 	Texture object_normal(object_base/"normal.png");
+	//object_normal.setFilters(Texture::Filter::NearestNeightbour);
 	Texture object_specular(object_base/"specular.png");
+	//object_specular.setFilters(Texture::Filter::NearestNeightbour);
 	Material object_material;
 	object_material.setDiffuseMap(&object_diffuse);
 	object_material.setNormalMap(&object_normal);
@@ -204,11 +206,9 @@ int main()
 	auto object = scene += new Cube;
 	object->setMaterial(&object_material);
 
-	//auto ambient = scene += new AmbientLight;
-	//ambient->setColor(Color::White);
-	
 	//auto dir = scene += new DirectionalLight;
 	//dir->setColor("#FFF7C9");
+	//dir->setAmbientStrength(0.0f);
 	//dir->setDirection(glm::vec3(cos(-M_PI/6), sin(-M_PI/6), 0));
 	
 	//auto point = scene += new PointLight;
@@ -216,6 +216,12 @@ int main()
 	//point->setPosition(glm::vec3(.5f, 0, 1));
 	//point->setDiffuseStrength(0.3f);
 	//point->setSpecularStrength(1);
+
+	//auto point1 = scene += new PointLight;
+	//point1->setColor("#FFF7C9");
+	//point1->setPosition(glm::vec3(-.5f, 0, 1));
+	//point1->setDiffuseStrength(0.3f);
+	//point1->setSpecularStrength(1);
 
 	auto spot = scene += new SpotLight;
 	spot->setColor(Color::White);
@@ -230,6 +236,8 @@ int main()
 	spot1->setOuterCutoffAngle(.92f);
 	spot1->setDirection(glm::vec3(0.2, -1, 0));
 	spot1->setPosition(glm::vec3(-3, 5, 0));
+
+	auto point = scene += new PointLight;
 
 	glm::vec3 object_rotation_angle(0, 0, 0);
 	glm::vec3 object_rotation_vel(0, 0, 0);
@@ -283,7 +291,7 @@ void DoRender(GLFWwindow* window)
 	shader["projection"  ] = *window_data->projection;
 	shader["view"        ] = window_data->camera->getView();
 	shader["viewPosition"] = window_data->camera->getPosition();
-	window_data->scene->drawObjects(window_data->shader);
+	window_data->scene->drawObjects(*window_data->shader);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -307,68 +315,119 @@ void DrawInterface(GLFWwindow* window)
 		glSafeCallVoid(glGetIntegerv(GL_POLYGON_MODE, polygon_render_mode));
 
 		bool depth_test_enabled = glSafeCall(glIsEnabled(GL_DEPTH_TEST));
+		static bool show_objects_window = false;
+		static bool show_object_window = false;
+		static Drawable* selected_object = nullptr;
 
-		ImGui::Begin("Debug");
-
-		if (ImGui::CollapsingHeader("Debugging", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar))
 		{
-			if (ImGui::Button("Debug break"))
-				DebugBreak(); // HELLO, PIDOR!
-		}
-
-		if (ImGui::CollapsingHeader("Rendering", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Text("Polygon render mode:");
-			ImGui::RadioButton("Fill", polygon_render_mode, GL_FILL);
-			ImGui::RadioButton("Wireframe", polygon_render_mode, GL_LINE);
-			ImGui::RadioButton("Points", polygon_render_mode, GL_POINT);
-			ImGui::Separator();
-			ImGui::Checkbox("Enable depth test", &depth_test_enabled);
-			ImGui::Checkbox("Calculate normals in shader", &window_data->normal_calculation);
-		}
-
-		if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			glm::vec3 pos = window_data->camera->getPosition();
-			ImGui::Text("Position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
-
-			ImGui::SliderFloat("Camera speed", &window_data->camera_speed, .01f, 5.f, "%.2f");
-
-			if (ImGui::Button("Save camera state")) window_data->camera->saveToFile  (camera_state_filename);
-			if (ImGui::Button("Load camera state")) window_data->camera->loadFromFile(camera_state_filename);
-			if (ImGui::Button("Save screenshot")) window_data->should_save_screenshot = true;
-
-			ImGui::Checkbox("Hide interface on screenshot", &window_data->screenshot_hide_interface);
-			ImGui::Checkbox("Show screenshot", &window_data->screenshot_show);
-		}
-
-		if (ImGui::CollapsingHeader("Logging", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			static std::pair<LoggingLevel, const char*> items[] = {
-				{LoggingLevel::Info,    "Log everithing"     },
-				{LoggingLevel::Warning, "Warnings and errors"},
-				{LoggingLevel::Error,   "Log only errors"    },
-				{LoggingLevel::Silent,  "Disable logging"    }
-			};
-			size_t size = IM_ARRAYSIZE(items);
-			static int selected_item_index = std::distance(items, std::find_if(items, items + size, [](auto item) { return item.first == GetLoggingLevel(); }));
-
-			if (ImGui::BeginCombo("Logging level", items[selected_item_index].second))
+			if (ImGui::BeginMenuBar())
 			{
-				for (size_t i = 0; i < size; i++)
+				if (ImGui::BeginMenu("View"))
 				{
-					bool selected = i == selected_item_index;
-					if (ImGui::Selectable(items[i].second, selected))
-						selected_item_index = i, SetLoggingLevel(items[i].first);
-
-					if (selected) ImGui::SetItemDefaultFocus();
+					ImGui::MenuItem("Objects", nullptr, &show_objects_window);
+					ImGui::EndMenu();
 				}
 
-				ImGui::EndCombo();
-			}			
+				ImGui::EndMenuBar();
+			}
+
+			if (ImGui::CollapsingHeader("Debugging", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				if (ImGui::Button("Debug break"))
+					DebugBreak(); // HELLO, PIDOR!
+			}
+
+			if (ImGui::CollapsingHeader("Rendering", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Text("Polygon render mode:");
+				ImGui::RadioButton("Fill", polygon_render_mode, GL_FILL);
+				ImGui::RadioButton("Wireframe", polygon_render_mode, GL_LINE);
+				ImGui::RadioButton("Points", polygon_render_mode, GL_POINT);
+				ImGui::Separator();
+				ImGui::Checkbox("Enable depth test", &depth_test_enabled);
+				ImGui::Checkbox("Calculate normals in shader", &window_data->normal_calculation);
+			}
+
+			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				glm::vec3 pos = window_data->camera->getPosition();
+				ImGui::Text("Position: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+
+				ImGui::SliderFloat("Camera speed", &window_data->camera_speed, .01f, 5.f, "%.2f");
+
+				if (ImGui::Button("Save camera state")) window_data->camera->saveToFile  (camera_state_filename);
+				if (ImGui::Button("Load camera state")) window_data->camera->loadFromFile(camera_state_filename);
+				if (ImGui::Button("Save screenshot")) window_data->should_save_screenshot = true;
+
+				ImGui::Checkbox("Hide interface on screenshot", &window_data->screenshot_hide_interface);
+				ImGui::Checkbox("Show screenshot", &window_data->screenshot_show);
+			}
+
+			if (ImGui::CollapsingHeader("Logging", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				static std::pair<LoggingLevel, const char*> items[] = {
+					{LoggingLevel::Info,    "Log everithing"     },
+					{LoggingLevel::Warning, "Warnings and errors"},
+					{LoggingLevel::Error,   "Log only errors"    },
+					{LoggingLevel::Silent,  "Disable logging"    }
+				};
+				size_t size = IM_ARRAYSIZE(items);
+				static int selected_item_index = std::distance(items, std::find_if(items, items + size, [](auto item) { return item.first == GetLoggingLevel(); }));
+
+				if (ImGui::BeginCombo("Logging level", items[selected_item_index].second))
+				{
+					for (size_t i = 0; i < size; i++)
+					{
+						bool selected = i == selected_item_index;
+						if (ImGui::Selectable(items[i].second, selected))
+							selected_item_index = i, SetLoggingLevel(items[i].first);
+
+						if (selected) ImGui::SetItemDefaultFocus();
+					}
+
+					ImGui::EndCombo();
+				}			
+			}
+
+			ImGui::End();
 		}
 
-		ImGui::End();
+		if (show_objects_window)
+		{
+			if (ImGui::Begin("Objects", &show_objects_window))
+			{
+				if (ImGui::BeginTable("table_objects", 2, ImGuiTableFlags_ScrollY | ImGuiTableFlags_Borders))
+				{
+					ImGui::TableSetupColumn("Address");
+					ImGui::TableHeadersRow();
+
+					for (auto object: *window_data->scene)
+					{
+						if (!object) continue;
+
+						ImGui::TableNextRow();
+
+						ImGui::TableNextColumn();
+						if (ImGui::Selectable(FormatTmp("0x%0*X", 2 * sizeof object, object), object == selected_object, ImGuiSelectableFlags_SpanAllColumns))
+							selected_object = object, show_object_window = true;
+					}
+
+					ImGui::EndTable();				
+				}
+
+				ImGui::End();
+			}
+		}
+
+		if (selected_object)
+		{
+			if (ImGui::Begin(FormatTmp("Object 0x%p", selected_object), &show_object_window))
+			{
+				selected_object->drawDebugGui();
+				ImGui::End();
+			}	
+		}
 
 		glSafeCallVoid(glSetEnabled(GL_DEPTH_TEST, depth_test_enabled));
 		glSafeCallVoid(glPolygonMode(GL_FRONT_AND_BACK, *polygon_render_mode));

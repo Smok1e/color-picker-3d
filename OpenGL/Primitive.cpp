@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
+#include <imgui.h>
 
 #include "Primitive.hpp"
 #include "Utils.hpp"
@@ -27,9 +28,9 @@ Primitive::~Primitive()
 
 //---------------------------------
 
-void Primitive::draw(Shader* shader /*= nullptr*/) const
+void Primitive::draw(Shader& shader) const
 {
-	if (shader) bindShader(*shader);
+	bindShader(shader);
 	glSafeCallVoid(glBindVertexArray(m_vertex_array));
 	glSafeCallVoid(glDrawArrays(GL_TRIANGLES, 0, m_vertex_buffer.getVertexCount()));
 	glSafeCallVoid(glBindVertexArray(0));
@@ -123,10 +124,17 @@ void Primitive::cleanup()
 
 void Primitive::bindShader(Shader& shader) const
 {
-	shader["model"              ] = m_model;
-	shader["modelNormalMatrix"  ] = m_normal_matrix;
+	shader["model"            ] = m_model;
+	shader["modelNormalMatrix"] = m_normal_matrix;
 	if (m_material) m_material->apply(shader);
 	shader.use();
+}
+
+//---------------------------------
+
+void Primitive::drawDebugGui()
+{
+	ImGui::Text("This is drawable %p.", this);
 }
 
 //---------------------------------

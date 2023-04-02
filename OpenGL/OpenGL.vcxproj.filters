@@ -16,17 +16,23 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{57cf0811-de76-45e2-9119-03506aa03a16}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Primitives">
+    <Filter Include="Header Files\Drawable">
+      <UniqueIdentifier>{d8b5045b-0e14-4d6b-9432-0650405dd919}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Drawable\Lights">
+      <UniqueIdentifier>{1095be92-e372-4823-a46d-85a0874cb83e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Drawable\Primitives">
       <UniqueIdentifier>{2caf4781-14ea-4459-b521-1285f3533ec4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Primitives">
+    <Filter Include="Source Files\Drawable">
+      <UniqueIdentifier>{25323699-67e4-4c67-9a4e-9271e7755160}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Drawable\Primitives">
       <UniqueIdentifier>{54f43a35-0fdb-4857-9f80-003cd5f8a88d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Lights">
+    <Filter Include="Source Files\Drawable\Lights">
       <UniqueIdentifier>{fde456b6-4e54-4807-a9ee-3fd60fd0ca38}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Lights">
-      <UniqueIdentifier>{1095be92-e372-4823-a46d-85a0874cb83e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,7 +54,7 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PrimitiveBuffer.cpp">
+    <ClCompile Include="SceneBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
@@ -64,40 +70,40 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Cone.cpp">
-      <Filter>Source Files\Primitives</Filter>
+      <Filter>Source Files\Drawable\Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Cube.cpp">
-      <Filter>Source Files\Primitives</Filter>
+      <Filter>Source Files\Drawable\Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Cylinder.cpp">
-      <Filter>Source Files\Primitives</Filter>
+      <Filter>Source Files\Drawable\Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Plane.cpp">
-      <Filter>Source Files\Primitives</Filter>
+      <Filter>Source Files\Drawable\Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Primitive.cpp">
-      <Filter>Source Files\Primitives</Filter>
+      <Filter>Source Files\Drawable\Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Sphere.cpp">
-      <Filter>Source Files\Primitives</Filter>
+      <Filter>Source Files\Drawable\Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Drawable\Lights</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Drawable\Lights</Filter>
     </ClCompile>
     <ClCompile Include="DirectionalLight.cpp">
-      <Filter>Source Files\Lights</Filter>
-    </ClCompile>
-    <ClCompile Include="AmbientLight.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Drawable\Lights</Filter>
     </ClCompile>
     <ClCompile Include="SpotLight.cpp">
-      <Filter>Source Files\Lights</Filter>
+      <Filter>Source Files\Drawable\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawable.cpp">
+      <Filter>Source Files\Drawable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,7 +122,7 @@
     <ClInclude Include="Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PrimitiveBuffer.hpp">
+    <ClInclude Include="SceneBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Texture.hpp">
@@ -132,37 +138,37 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Cone.hpp">
-      <Filter>Header Files\Primitives</Filter>
+      <Filter>Header Files\Drawable\Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Cube.hpp">
-      <Filter>Header Files\Primitives</Filter>
+      <Filter>Header Files\Drawable\Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Cylinder.hpp">
-      <Filter>Header Files\Primitives</Filter>
+      <Filter>Header Files\Drawable\Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Plane.hpp">
-      <Filter>Header Files\Primitives</Filter>
+      <Filter>Header Files\Drawable\Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Primitive.hpp">
-      <Filter>Header Files\Primitives</Filter>
+      <Filter>Header Files\Drawable\Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Material.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Light.hpp">
-      <Filter>Header Files\Lights</Filter>
+      <Filter>Header Files\Drawable\Lights</Filter>
     </ClInclude>
     <ClInclude Include="PointLight.hpp">
-      <Filter>Header Files\Lights</Filter>
+      <Filter>Header Files\Drawable\Lights</Filter>
     </ClInclude>
     <ClInclude Include="DirectionalLight.hpp">
-      <Filter>Header Files\Lights</Filter>
-    </ClInclude>
-    <ClInclude Include="AmbientLight.hpp">
-      <Filter>Header Files\Lights</Filter>
+      <Filter>Header Files\Drawable\Lights</Filter>
     </ClInclude>
     <ClInclude Include="SpotLight.hpp">
-      <Filter>Header Files\Lights</Filter>
+      <Filter>Header Files\Drawable\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawable.hpp">
+      <Filter>Header Files\Drawable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -176,7 +182,7 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Sphere.hpp">
-      <Filter>Header Files\Primitives</Filter>
+      <Filter>Header Files\Drawable\Primitives</Filter>
     </None>
   </ItemGroup>
 </Project>

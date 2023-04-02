@@ -1,19 +1,18 @@
 #pragma once
 
 #include "VertexBuffer.hpp"
-#include "Color.hpp"
-#include "Shader.hpp"
+#include "Drawable.hpp"
 #include "Material.hpp"
 
 //---------------------------------
 
-class Primitive
+class Primitive: public Drawable
 {
 public:
 	Primitive();
 	virtual ~Primitive();
 
-	virtual void draw(Shader* shader = nullptr) const;
+	virtual void draw(Shader& shader) const;
 
 	virtual void setPosition(const glm::vec3& position);
 	virtual glm::vec3 getPosition() const;
@@ -26,6 +25,8 @@ public:
 
 	virtual void setMaterial(Material* material);
 	virtual Material* getMaterial() const;
+
+	virtual void drawDebugGui();
 
 protected:
 	virtual void cleanup();

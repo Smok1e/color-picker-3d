@@ -1,3 +1,9 @@
+#define _USE_MATH_DEFINES
+
+#include <cmath>
+#include <imgui.h>
+#include <ImGuizmo.h>
+
 #include "SpotLight.hpp"
 
 //-----------------------------------
@@ -6,8 +12,6 @@ SpotLight::SpotLight():
 	Light(),
 	m_position(glm::vec3(0, 0, 0)),
 	m_direction(glm::vec3(0, 0, 0)),
-	m_diffuse_strength (0.8f),
-	m_specular_strength(0.5f),
 	m_cutoff_angle(0),
 	m_outer_cutoff_angle(0)
 {}
@@ -36,26 +40,6 @@ glm::vec3 SpotLight::getDirection() const
 	return m_direction;
 }
 
-void SpotLight::setDiffuseStrength(float strength)
-{
-	m_diffuse_strength = strength;
-}
-
-float SpotLight::getDiffuseStrength() const
-{
-	return m_diffuse_strength;
-}
-
-void SpotLight::setSpecularStrength(float strength)
-{
-	m_specular_strength = strength;
-}
-
-float SpotLight::getSpecularStrength() const
-{
-	return m_specular_strength;
-}
-
 void SpotLight::setCutoffAngle(float angle)
 {
 	m_cutoff_angle = angle;
@@ -78,7 +62,21 @@ float SpotLight::getOuterCutoffAngle() const
 
 //-----------------------------------
 
-void SpotLight::resetCounter(Shader& shader) const
+void SpotLight::draw(Shader& shader) const
+{
+	s_counter += (s_counter == -1);		   
+	shader.setUniformFormatted(m_position,                "spotLights[%zu].position",           s_counter);
+	shader.setUniformFormatted(m_direction,               "spotLights[%zu].direction",          s_counter);
+	shader.setUniformFormatted(m_color,                   "spotLights[%zu].color",              s_counter);
+	shader.setUniformFormatted(m_ambient_strength,        "spotLights[%zu].ambient_strength",   s_counter);
+	shader.setUniformFormatted(m_diffuse_strength,        "spotLights[%zu].diffuse_strength",   s_counter);
+	shader.setUniformFormatted(m_specular_strength,       "spotLights[%zu].specular_strength",  s_counter);
+	shader.setUniformFormatted(cos(m_cutoff_angle),       "spotLights[%zu].cutoff_angle",       s_counter);
+	shader.setUniformFormatted(cos(m_outer_cutoff_angle), "spotLights[%zu].outer_cutoff_angle", s_counter);
+	s_counter++;
+}
+
+void SpotLight::afterDraw(Shader& shader) const
 {
 	if (s_counter != -1)
 	{
@@ -87,17 +85,16 @@ void SpotLight::resetCounter(Shader& shader) const
 	}
 }
 
-void SpotLight::apply(Shader& shader) const
+//-----------------------------------
+
+void SpotLight::drawDebugGui()
 {
-	s_counter += (s_counter == -1);		   
-	shader.setUniformFormatted(m_position,           "spotLights[%zu].position",           s_counter);
-	shader.setUniformFormatted(m_direction,          "spotLights[%zu].direction",          s_counter);
-	shader.setUniformFormatted(m_color,              "spotLights[%zu].color",              s_counter);
-	shader.setUniformFormatted(m_diffuse_strength,   "spotLights[%zu].diffuse_strength",   s_counter);
-	shader.setUniformFormatted(m_specular_strength,  "spotLights[%zu].specular_strength",  s_counter);
-	shader.setUniformFormatted(m_cutoff_angle,       "spotLights[%zu].cutoff_angle",       s_counter);
-	shader.setUniformFormatted(m_outer_cutoff_angle, "spotLights[%zu].outer_cutoff_angle", s_counter);
-	s_counter++;
+	Light::drawDebugGui();
+
+	//ImGui::gizmo
+
+	ImGui::SliderFloat("Inner cutoff angle", &m_cutoff_angle,       0, M_PI*2, "%.2f");
+	ImGui::SliderFloat("Outer cutoff angle", &m_outer_cutoff_angle, 0, M_PI*2, "%.2f");
 }
 
 //-----------------------------------
