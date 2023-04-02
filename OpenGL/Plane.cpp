@@ -40,13 +40,13 @@ void Plane::calculateVertices()
 	Vertex c(glm::vec3(-m_size.x/2, 0,  m_size.y/2), glm::vec2(0, 1));
 	Vertex d(glm::vec3( m_size.x/2, 0,  m_size.y/2), glm::vec2(1, 1));
 
-	m_vertex_buffer += a;
-	m_vertex_buffer += b;
 	m_vertex_buffer += c;
+	m_vertex_buffer += b;
+	m_vertex_buffer += a;
 
 	m_vertex_buffer += b;
-	m_vertex_buffer += d;
 	m_vertex_buffer += c;
+	m_vertex_buffer += d;
 
 	m_vertex_buffer.commit();
 }

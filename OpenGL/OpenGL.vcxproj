@@ -131,19 +131,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AmbientLight.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Cone.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DebugVisualization.cpp" />
+    <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Logging.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="PrimitiveBuffer.cpp" />
+    <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -152,18 +156,22 @@
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AmbientLight.hpp" />
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Color.hpp" />
     <ClInclude Include="Cone.hpp" />
     <ClInclude Include="Cube.hpp" />
     <ClInclude Include="DebugVisualization.hpp" />
+    <ClInclude Include="DirectionalLight.hpp" />
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Cylinder.hpp" />
     <ClInclude Include="Logging.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="Plane.hpp" />
+    <ClInclude Include="PointLight.hpp" />
     <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PrimitiveBuffer.hpp" />
+    <ClInclude Include="SpotLight.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="Shader.hpp" />

@@ -23,9 +23,12 @@
 #include "Utils.hpp"
 #include "Camera.hpp"
 #include "PrimitiveBuffer.hpp"
-#include "Light.hpp"
 #include "DebugVisualization.hpp"
 #include "Material.hpp"
+#include "AmbientLight.hpp"
+#include "PointLight.hpp"
+#include "DirectionalLight.hpp"
+#include "SpotLight.hpp"
 
 #pragma warning(disable: 4244)
 
@@ -201,19 +204,32 @@ int main()
 	auto object = scene += new Cube;
 	object->setMaterial(&object_material);
 
-	auto light1 = scene += new Light;
-	light1->setColor("#FFF7C9");
-	light1->setPosition(glm::vec3(-.5f, 0, 1));
-	light1->setAmbientStrength(0.02f);
-	light1->setDiffuseStrength(0.2f);
-	light1->setSpecularStrength(1);
+	//auto ambient = scene += new AmbientLight;
+	//ambient->setColor(Color::White);
+	
+	//auto dir = scene += new DirectionalLight;
+	//dir->setColor("#FFF7C9");
+	//dir->setDirection(glm::vec3(cos(-M_PI/6), sin(-M_PI/6), 0));
+	
+	//auto point = scene += new PointLight;
+	//point->setColor("#33A7FF");
+	//point->setPosition(glm::vec3(.5f, 0, 1));
+	//point->setDiffuseStrength(0.3f);
+	//point->setSpecularStrength(1);
 
-	auto light2 = scene += new Light;
-	light2->setColor("#33A7FF");
-	light2->setPosition(glm::vec3(.5f, 0, 1));
-	light2->setDiffuseStrength(0.2f);
-	light2->setAmbientStrength(0);
-	light2->setSpecularStrength(1);
+	auto spot = scene += new SpotLight;
+	spot->setColor(Color::White);
+	spot->setCutoffAngle(.90f);
+	spot->setOuterCutoffAngle(.92f);
+	spot->setDirection(glm::vec3(0, -1, 0));
+	spot->setPosition(glm::vec3(0, 5, 0));
+
+	auto spot1 = scene += new SpotLight;
+	spot1->setColor("#33A7FF");
+	spot1->setCutoffAngle(.90f);
+	spot1->setOuterCutoffAngle(.92f);
+	spot1->setDirection(glm::vec3(0.2, -1, 0));
+	spot1->setPosition(glm::vec3(-3, 5, 0));
 
 	glm::vec3 object_rotation_angle(0, 0, 0);
 	glm::vec3 object_rotation_vel(0, 0, 0);
@@ -225,6 +241,11 @@ int main()
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) object_rotation_vel.y --;
 		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) object_rotation_vel.x ++;
 		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) object_rotation_vel.x --;
+
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) spot->setCutoffAngle(spot->getCutoffAngle()+0.001f);
+		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) spot->setCutoffAngle(spot->getCutoffAngle()-0.001f);
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) spot->setOuterCutoffAngle(spot->getOuterCutoffAngle()+0.001f);
+		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) spot->setOuterCutoffAngle(spot->getOuterCutoffAngle()-0.001f);
 
 		object_rotation_angle += object_rotation_vel * 0.0008f;
 		object_rotation_vel *= 0.95f;

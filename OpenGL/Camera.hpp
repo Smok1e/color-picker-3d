@@ -25,6 +25,8 @@ public:
 	void addRotation(const glm::vec2& rotation);
 	glm::vec2 getRotation() const;
 
+	glm::vec3 getDirection() const;
+
 	void setVelocityDampling(float dampling);
 	float getVelocityDampling() const;
 

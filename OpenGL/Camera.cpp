@@ -89,6 +89,11 @@ glm::vec2 Camera::getRotation() const
 	return m_rotation;
 }
 
+glm::vec3 Camera::getDirection() const
+{
+	return m_axes.z;
+}
+
 //-----------------------------------
 
 void Camera::setVelocityDampling(float dampling)

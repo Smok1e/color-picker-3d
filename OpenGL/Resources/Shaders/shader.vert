@@ -17,10 +17,10 @@ uniform mat4 projection;
 
 //--------------------------------- Output
 
-smooth out vec3 geometry_Position;
-smooth out vec3 geometry_Normal;
-       out mat3 geometry_TBN;
-smooth out vec2 geometry_TexCoord;
+out vec3 geometry_Position;
+out vec3 geometry_Normal;
+out mat3 geometry_TBN;
+out vec2 geometry_TexCoord;
 
 //---------------------------------
 

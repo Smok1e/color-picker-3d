@@ -4,10 +4,6 @@
 
 //-----------------------------------
 
-const unsigned LIGHTS_MAX = 32;
-
-//-----------------------------------
-
 PrimitiveBuffer::PrimitiveBuffer():
 	m_objects(),
 	m_lights()
@@ -33,12 +29,6 @@ bool PrimitiveBuffer::addObject(Primitive* object)
 
 bool PrimitiveBuffer::addObject(Light* light)
 {
-	if (m_lights.size() >= LIGHTS_MAX)
-	{
-		LogWarning("Lights limit reached\n");
-		return false;
-	}
-
 	auto iter = std::find(m_lights.begin(), m_lights.end(), light);
 	if (iter != m_lights.end())
 		return false;
@@ -75,9 +65,8 @@ void PrimitiveBuffer::drawObjects(Shader* shader /*= nullptr*/)
 {
 	if (shader)
 	{
-		shader->setUniform("lightCount", static_cast<int>(m_lights.size()));
-		for (size_t i = 0, lights_count = m_lights.size(); i < lights_count; i++)
-			m_lights[i]->apply(*shader, i);
+		for (const auto light: m_lights) light->apply       (*shader);
+		for (const auto light: m_lights) light->resetCounter(*shader);
 	}
 
 	for (const auto& object: m_objects)
