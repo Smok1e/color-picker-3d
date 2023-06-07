@@ -203,7 +203,7 @@ int main()
 	object_material.setNormalMap(&object_normal);
 	object_material.setSpecularMap(&object_specular);
 
-	auto object = scene += new Cube;
+	auto object = scene += new Sphere;
 	object->setMaterial(&object_material);
 
 	//auto dir = scene += new DirectionalLight;

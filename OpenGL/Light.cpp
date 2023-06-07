@@ -11,6 +11,10 @@ Light::Light():
 	m_specular_strength(.5f)
 {}
 
+int Light::s_point_light_count       = 0;
+int Light::s_directional_light_count = 0;
+int Light::s_spot_light_count        = 0;
+
 //---------------------------------
 
 void Light::setColor(const Color& color)
@@ -61,6 +65,17 @@ void Light::drawDebugGui()
 	ImGui::SliderFloat("Ambient strength", &m_ambient_strength,   0.f, 5.f, "%.2f");
 	ImGui::SliderFloat("Diffuse strength", &m_diffuse_strength,   0.f, 5.f, "%.2f");
 	ImGui::SliderFloat("Specular strength", &m_specular_strength, 0.f, 5.f, "%.2f");
+}
+
+//---------------------------------
+
+void Light::Update(Shader& shader)
+{
+	shader["pointLightCount"] = s_point_light_count;
+	shader["dirLightCount"  ] = s_directional_light_count;
+	shader["spotLightCount" ] = s_spot_light_count;
+
+	s_point_light_count = s_directional_light_count = s_spot_light_count = 0;
 }
 
 //---------------------------------

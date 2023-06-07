@@ -1,6 +1,7 @@
 #include "SceneBuffer.hpp"
 #include "Utils.hpp"
 #include "Logging.hpp"
+#include "Light.hpp"
 
 //-----------------------------------
 
@@ -40,8 +41,8 @@ bool SceneBuffer::deleteObject(Drawable* object)
 
 void SceneBuffer::drawObjects(Shader& shader) const
 {
-	for (const auto object: m_objects) object->draw     (shader);
-	for (const auto object: m_objects) object->afterDraw(shader);
+	for (const auto object: m_objects) object->draw(shader);
+	Light::Update(shader);
 }
 
 void SceneBuffer::drawDebugGui()

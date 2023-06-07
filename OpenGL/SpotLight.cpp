@@ -1,8 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
 
 #include <cmath>
 #include <imgui.h>
-#include <ImGuizmo.h>
+// #include <ImGuizmo.h>
 
 #include "SpotLight.hpp"
 
@@ -15,8 +16,6 @@ SpotLight::SpotLight():
 	m_cutoff_angle(0),
 	m_outer_cutoff_angle(0)
 {}
-
-int SpotLight::s_counter = 0;
 
 //-----------------------------------
 
@@ -64,25 +63,21 @@ float SpotLight::getOuterCutoffAngle() const
 
 void SpotLight::draw(Shader& shader) const
 {
-	s_counter += (s_counter == -1);		   
-	shader.setUniformFormatted(m_position,                "spotLights[%zu].position",           s_counter);
-	shader.setUniformFormatted(m_direction,               "spotLights[%zu].direction",          s_counter);
-	shader.setUniformFormatted(m_color,                   "spotLights[%zu].color",              s_counter);
-	shader.setUniformFormatted(m_ambient_strength,        "spotLights[%zu].ambient_strength",   s_counter);
-	shader.setUniformFormatted(m_diffuse_strength,        "spotLights[%zu].diffuse_strength",   s_counter);
-	shader.setUniformFormatted(m_specular_strength,       "spotLights[%zu].specular_strength",  s_counter);
-	shader.setUniformFormatted(cos(m_cutoff_angle),       "spotLights[%zu].cutoff_angle",       s_counter);
-	shader.setUniformFormatted(cos(m_outer_cutoff_angle), "spotLights[%zu].outer_cutoff_angle", s_counter);
-	s_counter++;
-}
+	static char instance[BUFFSIZE] = "";
+	char* field = instance + sprintf_s(instance, "spotLights[%d].", Light::s_spot_light_count);
 
-void SpotLight::afterDraw(Shader& shader) const
-{
-	if (s_counter != -1)
-	{
-		shader["spotLightCount"] = s_counter;
-		s_counter = -1;
-	}
+	#define setuniform(name, value) strcpy(field, name); shader.setUniform(instance, value);
+	setuniform("position",           m_position               );
+	setuniform("direction",          m_direction              );
+	setuniform("color",              m_color                  );
+	setuniform("ambient_strength",   m_ambient_strength       );
+	setuniform("diffuse_strength",   m_diffuse_strength       );
+	setuniform("specular_strength",  m_specular_strength      );
+	setuniform("cutoff_angle",       cos(m_cutoff_angle)      );
+	setuniform("outer_cutoff_angle", cos(m_outer_cutoff_angle));
+	#undef setuniform
+
+	Light::s_spot_light_count++;
 }
 
 //-----------------------------------
@@ -90,9 +85,6 @@ void SpotLight::afterDraw(Shader& shader) const
 void SpotLight::drawDebugGui()
 {
 	Light::drawDebugGui();
-
-	//ImGui::gizmo
-
 	ImGui::SliderFloat("Inner cutoff angle", &m_cutoff_angle,       0, M_PI*2, "%.2f");
 	ImGui::SliderFloat("Outer cutoff angle", &m_outer_cutoff_angle, 0, M_PI*2, "%.2f");
 }

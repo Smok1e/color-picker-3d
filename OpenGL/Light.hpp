@@ -11,6 +11,8 @@ public:
 
 	Light();
 
+	static void Update(Shader& shader);
+
 	virtual void setColor(const Color& color);
 	virtual Color getColor() const;
 
@@ -24,7 +26,6 @@ public:
 	virtual float getSpecularStrength() const;
 
 	virtual void draw(Shader& shader) const = 0;
-	virtual void afterDraw(Shader& shader) const = 0;
 
 	virtual void drawDebugGui();
 
@@ -33,6 +34,10 @@ protected:
 	float m_ambient_strength;
 	float m_diffuse_strength;
 	float m_specular_strength;
+
+	static int s_point_light_count;
+	static int s_directional_light_count;
+	static int s_spot_light_count;
 
 };
 

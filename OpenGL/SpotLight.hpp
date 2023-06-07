@@ -22,7 +22,6 @@ public:
 	virtual float getOuterCutoffAngle() const;
 
 	virtual void draw(Shader& shader) const;
-	virtual void afterDraw(Shader& shader) const;
 
 	virtual void drawDebugGui();
 
@@ -31,9 +30,6 @@ protected:
 	glm::vec3 m_direction;
 	float m_cutoff_angle;
 	float m_outer_cutoff_angle;
-
-private:
-	static int s_counter;
 
 };
 

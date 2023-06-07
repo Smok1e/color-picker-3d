@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "DirectionalLight.hpp"
 
 //---------------------------------
@@ -6,8 +8,6 @@ DirectionalLight::DirectionalLight():
 	Light(),
 	m_direction(glm::vec3(0, 0, 0))
 {}
-
-int DirectionalLight::s_counter = 0;
 
 //---------------------------------
 
@@ -25,22 +25,18 @@ glm::vec3 DirectionalLight::getDirection() const
 
 void DirectionalLight::draw(Shader& shader) const
 {
-	s_counter += (s_counter == -1);
-	shader.setUniformFormatted(m_direction,         "dirLights[%zu].direction",         s_counter);
-	shader.setUniformFormatted(m_color,             "dirLights[%zu].color",             s_counter);
-	shader.setUniformFormatted(m_ambient_strength,  "dirLights[%zu].ambient_strength",  s_counter);
-	shader.setUniformFormatted(m_diffuse_strength,  "dirLights[%zu].diffuse_strength",  s_counter);
-	shader.setUniformFormatted(m_specular_strength, "dirLights[%zu].specular_strength", s_counter);
-	s_counter++;
-}
+	static char instance[BUFFSIZE] = "";
+	char* field = instance + sprintf_s(instance, "dirLights[%d].", Light::s_directional_light_count);
 
-void DirectionalLight::afterDraw(Shader& shader) const
-{
-	if (s_counter != -1)
-	{
-		shader["dirLightCount"] = s_counter;
-		s_counter = -1;
-	}
+	#define setuniform(name, value) strcpy(field, name); shader.setUniform(instance, value);
+	setuniform("direction",          m_direction        );
+	setuniform("color",              m_color            );
+	setuniform("ambient_strength",   m_ambient_strength );
+	setuniform("diffuse_strength",   m_diffuse_strength );
+	setuniform("specular_strength",  m_specular_strength);
+	#undef setuniform
+
+	Light::s_directional_light_count++;
 }
 
 //---------------------------------
